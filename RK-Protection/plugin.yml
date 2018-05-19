@@ -1,0 +1,13 @@
+name: RK-Protection
+author: T4TU_
+version: 2
+depend: [RK-Core]
+main: me.t4tu.rkprotection.Protection
+commands:
+    pvpbypass:
+    area:
+    lukko:
+    lukitse:
+    avaa:
+    oikeudet:
+    bypass:
