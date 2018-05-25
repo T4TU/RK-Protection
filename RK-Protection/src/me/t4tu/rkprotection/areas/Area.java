@@ -1,44 +1,48 @@
 package me.t4tu.rkprotection.areas;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.Location;
+
+import me.t4tu.rkcore.utils.CoreUtils;
 import me.t4tu.rkprotection.Protection;
 
 public class Area {
 	
-	private ArrayList<Flag> flags = new ArrayList<Flag>();
 	private String name;
-	private int ID;
-	private String world;
-	private int x1;
-	private int y1;
-	private int z1;
-	private int x2;
-	private int y2;
-	private int z2;
+	private int id;
+	private List<SubArea> subAreas;
+	private List<Flag> flags;
 	
-	public Area(String name, int ID, String world, int x1, int y1, int z1, int x2, int y2, int z2) {
+	public Area(String name, int id, List<SubArea> subAreas, List<Flag> flags) {
 		this.name = name;
-		this.ID = ID;
-		this.world = world;
-		this.x1 = x1;
-		this.y1 = y1;
-		this.z1 = z1;
-		this.x2 = x2;
-		this.y2 = y2;
-		this.z2 = z2;
+		this.id = id;
+		this.subAreas = subAreas;
+		this.flags = flags;
 	}
 	
 	public String getName() {
 		return name;
 	}
 	
-	public int getID() {
-		return ID;
+	public int getId() {
+		return id;
 	}
 	
-	public ArrayList<Flag> getFlags() {
+	public List<SubArea> getSubAreas() {
+		return subAreas;
+	}
+	
+	public SubArea getSubAreaByName(String name) {
+		for (SubArea subArea : subAreas) {
+			if (subArea.getName().equalsIgnoreCase(name)) {
+				return subArea;
+			}
+		}
+		return null;
+	}
+	
+	public List<Flag> getFlags() {
 		return flags;
 	}
 	
@@ -46,71 +50,55 @@ public class Area {
 		return flags.contains(flag);
 	}
 	
-	public void addFlag(Flag flag) {
-		if (!flags.contains(flag)) {
-			flags.add(flag);
-			if (Protection.getPlugin().getConfig().getStringList("areas." + ID + ".flags") != null) {
-				if (!Protection.getPlugin().getConfig().getStringList("areas." + ID + ".flags").contains(flag.toString())) {
-					List<String> flags = Protection.getPlugin().getConfig().getStringList("areas." + ID + ".flags");
-					flags.add(flag.toString());
-					Protection.getPlugin().getConfig().set("areas." + ID + ".flags", flags);
-					Protection.getPlugin().saveConfig();
-				}
-			}
-			else {
-				ArrayList<String> flags = new ArrayList<String>();
-				flags.add(flag.toString());
-				Protection.getPlugin().getConfig().set("areas." + ID + ".flags", flags);
-				Protection.getPlugin().saveConfig();
+	public void addSubArea(SubArea subArea) {
+		CoreUtils.setLocation(Protection.getPlugin(), "areas." + id + ".sub-areas." + subArea.getName() + ".corner-1", subArea.getLocation1());
+		CoreUtils.setLocation(Protection.getPlugin(), "areas." + id + ".sub-areas." + subArea.getName() + ".corner-2", subArea.getLocation2());
+		reloadSubAreas();
+	}
+	
+	public void removeSubArea(String name) {
+		Protection.getPlugin().getConfig().set("areas." + id + ".sub-areas." + name, null);
+		Protection.getPlugin().saveConfig();
+		reloadSubAreas();
+	}
+	
+	public void reloadSubAreas() {
+		subAreas.clear();
+		if (Protection.getPlugin().getConfig().getConfigurationSection("areas." + id + ".sub-areas") != null) {
+			for (String s2 : Protection.getPlugin().getConfig().getConfigurationSection("areas." + id + ".sub-areas").getKeys(false)) {
+				Location location1 = CoreUtils.loadLocation(Protection.getPlugin(), "areas." + id + ".sub-areas." + s2 + ".corner-1");
+				Location location2 = CoreUtils.loadLocation(Protection.getPlugin(), "areas." + id + ".sub-areas." + s2 + ".corner-2");
+				SubArea subArea = new SubArea(s2, location1, location2);
+				subAreas.add(subArea);
 			}
 		}
 	}
 	
-	public void removeFlag(Flag flag) {
-		flags.remove(flag);
-		if (Protection.getPlugin().getConfig().getStringList("areas." + ID + ".flags") != null) {
-			List<String> flags = Protection.getPlugin().getConfig().getStringList("areas." + ID + ".flags");
-			flags.remove(flag.toString());
-			Protection.getPlugin().getConfig().set("areas." + ID + ".flags", flags);
-			Protection.getPlugin().saveConfig();
+	public void addFlag(Flag flag) {
+		List<String> flags = Protection.getPlugin().getConfig().getStringList("areas." + id + ".flags");
+		if (!flags.contains(flag.toString())) {
+			flags.add(flag.toString());
 		}
+		Protection.getPlugin().getConfig().set("areas." + id + ".flags", flags);
+		Protection.getPlugin().saveConfig();
+		reloadFlags();
+	}
+	
+	public void removeFlag(Flag flag) {
+		List<String> flags = Protection.getPlugin().getConfig().getStringList("areas." + id + ".flags");
+		flags.remove(flag.toString());
+		Protection.getPlugin().getConfig().set("areas." + id + ".flags", flags);
+		Protection.getPlugin().saveConfig();
+		reloadFlags();
 	}
 	
 	public void reloadFlags() {
 		flags.clear();
-		if (Protection.getPlugin().getConfig().getStringList("areas." + ID + ".flags") != null) {
-			for (String flag : Protection.getPlugin().getConfig().getStringList("areas." + ID + ".flags")) {
+		try {
+			for (String flag : Protection.getPlugin().getConfig().getStringList("areas." + id + ".flags")) {
 				flags.add(Flag.valueOf(flag));
 			}
 		}
+		catch (Exception e) { }
 	}
-	
-	public String getWorld() {
-		return world;
-	}
-	
-	public int getX1() {
-		return x1;
-	}
-	
-	public int getY1() {
-		return y1;
-	}
-	
-	public int getZ1() {
-		return z1;
-	}
-	
-	public int getX2() {
-		return x2;
-	}
-	
-	public int getY2() {
-		return y2;
-	}
-	
-	public int getZ2() {
-		return z2;
-	}
-	
 }

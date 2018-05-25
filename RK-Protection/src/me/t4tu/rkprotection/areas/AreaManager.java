@@ -6,6 +6,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
+import me.t4tu.rkcore.utils.CoreUtils;
 import me.t4tu.rkprotection.Protection;
 
 public class AreaManager {
@@ -30,18 +31,18 @@ public class AreaManager {
 		return null;
 	}
 	
-	public Area getAreaByID(int id) {
+	public Area getAreaById(int id) {
 		for (Area area : areas) {
-			if (area.getID() == id) {
+			if (area.getId() == id) {
 				return area;
 			}
 		}
 		return null;
 	}
 	
-	public Area getAreaByID(String id) {
+	public Area getAreaById(String id) {
 		for (Area area : areas) {
-			if (id.equalsIgnoreCase("" + area.getID())) {
+			if (id.equalsIgnoreCase("" + area.getId())) {
 				return area;
 			}
 		}
@@ -50,17 +51,32 @@ public class AreaManager {
 	
 	public Area getArea(Location location) {
 		Area toBeReturned = null;
+		Location l = location.getBlock().getLocation();
 		for (Area area : areas) {
-			if (location.getWorld().getName().equals(area.getWorld()) && location.getX() >= area.getX1() && location.getX() <= area.getX2() && 
-					location.getY() >= area.getY1() && location.getY() <= area.getY2() && 
-					location.getZ() >= area.getZ1() && location.getZ() <= area.getZ2()) {
-				if (toBeReturned != null) {
-					if (area.getID() > toBeReturned.getID()) {
-						toBeReturned = area;
-					}
+			for (SubArea subArea : area.getSubAreas()) {
+				Location location1 = subArea.getLocation1();
+				Location location2 = subArea.getLocation2();
+				if (location1 == null || location2 == null) {
+					continue;
 				}
-				else {
-					toBeReturned = area;
+				if (l.getWorld().getName().equals(location1.getWorld().getName()) && l.getWorld().getName().equals(location2.getWorld().getName())) {
+					if (((location1.getX() <= l.getX()) && (l.getX() <= location2.getX())) || 
+							((location1.getX() >= l.getX()) && (l.getX() >= location2.getX()))) {
+						if (((location1.getY() <= l.getY()) && (l.getY() <= location2.getY())) || 
+								((location1.getY() >= l.getY()) && (l.getY() >= location2.getY()))) {
+							if (((location1.getZ() <= l.getZ()) && (l.getZ() <= location2.getZ())) || 
+									((location1.getZ() >= l.getZ()) && (l.getZ() >= location2.getZ()))) {
+								if (toBeReturned != null) {
+									if (area.getId() > toBeReturned.getId()) {
+										toBeReturned = area;
+									}
+								}
+								else {
+									toBeReturned = area;
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -74,22 +90,23 @@ public class AreaManager {
 				try {
 					String name = Protection.getPlugin().getConfig().getString("areas." + s + ".name");
 					int id = Integer.parseInt(s);
-					String world = Protection.getPlugin().getConfig().getString("areas." + s + ".world");
-					int x1 = Protection.getPlugin().getConfig().getInt("areas." + s + ".x1");
-					int y1 = Protection.getPlugin().getConfig().getInt("areas." + s + ".y1");
-					int z1 = Protection.getPlugin().getConfig().getInt("areas." + s + ".z1");
-					int x2 = Protection.getPlugin().getConfig().getInt("areas." + s + ".x2");
-					int y2 = Protection.getPlugin().getConfig().getInt("areas." + s + ".y2");
-					int z2 = Protection.getPlugin().getConfig().getInt("areas." + s + ".z2");
-					Area area = new Area(name, id, world, x1, y1, z1, x2, y2, z2);
-					if (Protection.getPlugin().getConfig().getStringList("areas." + s + ".flags") != null) {
-						for (String flag : Protection.getPlugin().getConfig().getStringList("areas." + s + ".flags")) {
-							area.addFlag(Flag.valueOf(flag));
+					List<SubArea> subAreas = new ArrayList<SubArea>();
+					if (Protection.getPlugin().getConfig().getConfigurationSection("areas." + s + ".sub-areas") != null) {
+						for (String s2 : Protection.getPlugin().getConfig().getConfigurationSection("areas." + s + ".sub-areas").getKeys(false)) {
+							Location location1 = CoreUtils.loadLocation(Protection.getPlugin(), "areas." + s + ".sub-areas." + s2 + ".corner-1");
+							Location location2 = CoreUtils.loadLocation(Protection.getPlugin(), "areas." + s + ".sub-areas." + s2 + ".corner-2");
+							SubArea subArea = new SubArea(s2, location1, location2);
+							subAreas.add(subArea);
 						}
 					}
+					List<Flag> flags = new ArrayList<Flag>();
+					for (String flag : Protection.getPlugin().getConfig().getStringList("areas." + s + ".flags")) {
+						flags.add(Flag.valueOf(flag));
+					}
+					Area area = new Area(name, id, subAreas, flags);
 					areas.add(area);
 				}
-				catch (NumberFormatException e) {
+				catch (Exception e) {
 					Bukkit.getConsoleSender().sendMessage("Virhe ladattaessa aluetta ID:llä '" + s + "'");
 				}
 			}
