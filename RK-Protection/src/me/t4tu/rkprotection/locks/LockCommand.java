@@ -40,7 +40,7 @@ public class LockCommand implements CommandExecutor {
 		Player p = (Player) sender;
 		
 		if (cmd.getName().equalsIgnoreCase("bypass")) {
-			if (CoreUtils.hasRank(p, "moderaattori")) {
+			if (CoreUtils.hasRank(p, "valvoja")) {
 				if (Protection.getLockManager().getBypasses().contains(p.getName())) {
 					Protection.getLockManager().getBypasses().remove(p.getName());
 					p.sendMessage(tc2 + "Et voi enää käyttää lukittuja kohteita!");
