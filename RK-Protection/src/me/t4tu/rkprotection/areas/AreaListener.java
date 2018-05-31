@@ -38,7 +38,7 @@ public class AreaListener implements Listener {
 	private static final List<SpawnReason> REASONS = Arrays.asList(SpawnReason.CHUNK_GEN, SpawnReason.NATURAL, SpawnReason.ENDER_PEARL, SpawnReason.DISPENSE_EGG, SpawnReason.SLIME_SPLIT, 
 			SpawnReason.LIGHTNING, SpawnReason.JOCKEY, SpawnReason.REINFORCEMENTS, SpawnReason.SPAWNER, SpawnReason.SILVERFISH_BLOCK, SpawnReason.MOUNT, SpawnReason.EGG);
 	private static final List<Material> CONTAINERS = Arrays.asList(Material.CHEST, Material.TRAPPED_CHEST, Material.ENDER_CHEST, Material.WORKBENCH, Material.FURNACE, Material.ANVIL, 
-			Material.ENCHANTMENT_TABLE, Material.JUKEBOX, Material.DISPENSER, Material.DROPPER, Material.HOPPER);
+			Material.ENCHANTMENT_TABLE, Material.JUKEBOX, Material.DISPENSER, Material.DROPPER, Material.HOPPER, Material.BREWING_STAND);
 	private static final List<Material> DOORS = Arrays.asList(Material.WOODEN_DOOR, Material.SPRUCE_DOOR, Material.BIRCH_DOOR, Material.JUNGLE_DOOR, Material.ACACIA_DOOR, Material.DARK_OAK_DOOR, 
 			Material.IRON_DOOR_BLOCK, Material.TRAP_DOOR, Material.IRON_TRAPDOOR, Material.FENCE_GATE, Material.SPRUCE_FENCE_GATE, Material.BIRCH_FENCE_GATE, Material.JUNGLE_FENCE_GATE, 
 			Material.ACACIA_FENCE_GATE, Material.DARK_OAK_FENCE_GATE);
