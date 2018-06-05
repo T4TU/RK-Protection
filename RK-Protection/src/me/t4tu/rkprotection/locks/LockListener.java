@@ -56,7 +56,7 @@ public class LockListener implements Listener {
 	
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent e) {
-		if (Protection.getLockManager().getBypasses().remove(e.getPlayer().getName()));
+		Protection.getLockManager().getBypasses().remove(e.getPlayer().getName());
 	}
 	
 	///////////////////////////////////////////////////////////////
