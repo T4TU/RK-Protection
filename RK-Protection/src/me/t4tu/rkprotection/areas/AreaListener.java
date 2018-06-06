@@ -9,19 +9,24 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.entity.ThrownPotion;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.AreaEffectCloudApplyEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
-import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
+import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerFishEvent.State;
@@ -29,6 +34,9 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 
 import me.t4tu.rkcore.utils.CoreUtils;
 import me.t4tu.rkprotection.Protection;
@@ -59,7 +67,7 @@ public class AreaListener implements Listener {
 							e.getPlayer().sendMessage("");
 							e.getPlayer().sendMessage("§4§l Varoitus!");
 							e.getPlayer().sendMessage("");
-							e.getPlayer().sendMessage("§c Saavut PvP-alueelle! Tällä alueella muut voivat tappaa sinut ja sinä voit tappaa muita.");
+							e.getPlayer().sendMessage("§c Saavut PvP-alueelle! Tällä alueella muut voivat tappaa sinut ja sinä voit tappaa muita. Et menetä tavaroita kuollessasi.");
 							e.getPlayer().sendMessage("");
 						}
 					}
@@ -93,21 +101,27 @@ public class AreaListener implements Listener {
 			if (Protection.getAreaManager().getPvPBypasses().contains(e.getDamager().getName())) {
 				return;
 			}
-			if (victimArea != null) {
-				if (!victimArea.hasFlag(Flag.PVP)) {
-					e.setCancelled(true);
-				}
-			}
-			else {
+			if (victimArea == null || !victimArea.hasFlag(Flag.PVP)) {
 				e.setCancelled(true);
 			}
-			if (damagerArea != null) {
-				if (!damagerArea.hasFlag(Flag.PVP)) {
+			if (damagerArea == null || !damagerArea.hasFlag(Flag.PVP)) {
+				e.setCancelled(true);
+			}
+		}
+		if (e.getEntity() instanceof Player && e.getDamager() instanceof Projectile && !(e.getDamager() instanceof ThrownPotion)) {
+			Projectile projectile = (Projectile) e.getDamager();
+			if (projectile.getShooter() instanceof Player) {
+				Player shooter = (Player) projectile.getShooter();
+				Area shooterArea = Protection.getAreaManager().getArea(shooter.getLocation());
+				if (Protection.getAreaManager().getPvPBypasses().contains(shooter.getName())) {
+					return;
+				}
+				if (victimArea == null || !victimArea.hasFlag(Flag.PVP)) {
 					e.setCancelled(true);
 				}
-			}
-			else {
-				e.setCancelled(true);
+				if (shooterArea == null || !shooterArea.hasFlag(Flag.PVP)) {
+					e.setCancelled(true);
+				}
 			}
 		}
 		if (e.getEntity() instanceof ItemFrame || e.getEntity() instanceof Painting || e.getEntity() instanceof ArmorStand) {
@@ -116,6 +130,56 @@ public class AreaListener implements Listener {
 					if (!victimArea.hasFlag(Flag.ALLOW_DESTROYING)) {
 						e.setCancelled(true);
 					}
+				}
+			}
+		}
+	}
+	
+	@EventHandler
+	public void onPlayerDeath(PlayerDeathEvent e) {
+		Area area = Protection.getAreaManager().getArea(e.getEntity().getLocation());
+		if (area != null && area.hasFlag(Flag.PVP)) {
+			e.setKeepInventory(true);
+			e.setKeepLevel(true);
+			e.setDroppedExp(0);
+		}
+	}
+	
+	@EventHandler
+	public void onPotionSplash(PotionSplashEvent e) {
+		if (e.getPotion().getShooter() instanceof Player) {
+			Player player = (Player) e.getPotion().getShooter();
+			Area throwerArea = Protection.getAreaManager().getArea(player.getLocation());
+			if (Protection.getAreaManager().getPvPBypasses().contains(player.getName())) {
+				return;
+			}
+			boolean b = false;
+			for (PotionEffect effect : e.getPotion().getEffects()) {
+				if (effect.getType().equals(PotionEffectType.POISON) || effect.getType().equals(PotionEffectType.HARM)) {
+					b = true;
+				}
+			}
+			if (b) {
+				for (Player victim : player.getWorld().getPlayers()) {
+					if (victim != player) {
+						Area victimArea = Protection.getAreaManager().getArea(victim.getLocation());
+						if ((victimArea == null || !victimArea.hasFlag(Flag.PVP)) || (throwerArea == null || !throwerArea.hasFlag(Flag.PVP))) {
+							e.setIntensity(victim, 0);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	@EventHandler
+	public void onAreaEffectCloudApply(AreaEffectCloudApplyEvent e) {
+		PotionType type = e.getEntity().getBasePotionData().getType();
+		if (type == PotionType.POISON || type == PotionType.INSTANT_DAMAGE) {
+			for (Player victim : e.getEntity().getWorld().getPlayers()) {
+				Area victimArea = Protection.getAreaManager().getArea(victim.getLocation());
+				if (victimArea == null || !victimArea.hasFlag(Flag.PVP)) {
+					e.getAffectedEntities().remove(victim);
 				}
 			}
 		}
