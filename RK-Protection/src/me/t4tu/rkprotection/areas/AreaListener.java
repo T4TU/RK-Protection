@@ -45,12 +45,14 @@ public class AreaListener implements Listener {
 	
 	private static final List<SpawnReason> REASONS = Arrays.asList(SpawnReason.CHUNK_GEN, SpawnReason.NATURAL, SpawnReason.ENDER_PEARL, SpawnReason.DISPENSE_EGG, SpawnReason.SLIME_SPLIT, 
 			SpawnReason.LIGHTNING, SpawnReason.JOCKEY, SpawnReason.REINFORCEMENTS, SpawnReason.SPAWNER, SpawnReason.SILVERFISH_BLOCK, SpawnReason.MOUNT, SpawnReason.EGG);
-	private static final List<Material> CONTAINERS = Arrays.asList(Material.CHEST, Material.TRAPPED_CHEST, Material.ENDER_CHEST, Material.WORKBENCH, Material.FURNACE, Material.ANVIL, 
-			Material.ENCHANTMENT_TABLE, Material.JUKEBOX, Material.DISPENSER, Material.DROPPER, Material.HOPPER, Material.BREWING_STAND);
-	private static final List<Material> DOORS = Arrays.asList(Material.WOODEN_DOOR, Material.SPRUCE_DOOR, Material.BIRCH_DOOR, Material.JUNGLE_DOOR, Material.ACACIA_DOOR, Material.DARK_OAK_DOOR, 
-			Material.IRON_DOOR_BLOCK, Material.TRAP_DOOR, Material.IRON_TRAPDOOR, Material.FENCE_GATE, Material.SPRUCE_FENCE_GATE, Material.BIRCH_FENCE_GATE, Material.JUNGLE_FENCE_GATE, 
-			Material.ACACIA_FENCE_GATE, Material.DARK_OAK_FENCE_GATE);
-	private static final List<Material> REDSTONE = Arrays.asList(Material.WOOD_BUTTON, Material.STONE_BUTTON, Material.LEVER, Material.WOOD_PLATE, Material.STONE_PLATE, Material.GOLD_PLATE, Material.IRON_PLATE);
+	private static final List<Material> CONTAINERS = Arrays.asList(Material.CHEST, Material.TRAPPED_CHEST, Material.ENDER_CHEST, Material.CRAFTING_TABLE, Material.FURNACE, Material.ANVIL, 
+			Material.ENCHANTING_TABLE, Material.JUKEBOX, Material.DISPENSER, Material.DROPPER, Material.HOPPER, Material.BREWING_STAND);
+	private static final List<Material> DOORS = Arrays.asList(Material.OAK_DOOR, Material.SPRUCE_DOOR, Material.BIRCH_DOOR, Material.JUNGLE_DOOR, Material.ACACIA_DOOR, Material.DARK_OAK_DOOR, 
+			Material.IRON_DOOR, Material.OAK_TRAPDOOR, Material.BIRCH_TRAPDOOR, Material.SPRUCE_TRAPDOOR, Material.JUNGLE_TRAPDOOR, Material.ACACIA_TRAPDOOR, Material.DARK_OAK_TRAPDOOR,
+			Material.IRON_TRAPDOOR, Material.OAK_FENCE_GATE, Material.SPRUCE_FENCE_GATE, Material.BIRCH_FENCE_GATE, Material.JUNGLE_FENCE_GATE, Material.ACACIA_FENCE_GATE, Material.DARK_OAK_FENCE_GATE);
+	private static final List<Material> REDSTONE = Arrays.asList(Material.OAK_BUTTON, Material.BIRCH_BUTTON, Material.SPRUCE_BUTTON, Material.JUNGLE_BUTTON, Material.ACACIA_BUTTON, Material.DARK_OAK_BUTTON,
+			Material.STONE_BUTTON, Material.LEVER, Material.OAK_PRESSURE_PLATE, Material.BIRCH_PRESSURE_PLATE, Material.SPRUCE_PRESSURE_PLATE, Material.JUNGLE_PRESSURE_PLATE, Material.ACACIA_PRESSURE_PLATE,
+			Material.DARK_OAK_PRESSURE_PLATE, Material.STONE_PRESSURE_PLATE, Material.HEAVY_WEIGHTED_PRESSURE_PLATE, Material.LIGHT_WEIGHTED_PRESSURE_PLATE);
 	
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent e) {
@@ -246,7 +248,7 @@ public class AreaListener implements Listener {
 			Area area = Protection.getAreaManager().getArea(e.getClickedBlock().getLocation());
 			if (area != null) {
 				if (!area.hasFlag(Flag.ALLOW_DESTROYING)) {
-					if (e.getClickedBlock().getType() == Material.SOIL) {
+					if (e.getClickedBlock().getType() == Material.FARMLAND) {
 						e.setCancelled(true);
 					}
 				}

@@ -76,13 +76,13 @@ public class LockListener implements Listener {
 			Block b = e.getClickedBlock();
 			boolean cancel = false;
 			String type = "";
-			if (b.getType() == Material.WOODEN_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR) {
+			if (b.getType() == Material.OAK_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR) {
 				if (Protection.getLockManager().isLocked(b) && !Protection.getLockManager().hasPermission(b, e.getPlayer())) {
 					cancel = true;
 					type = "ovi";
 				}
 			}
-			else if (b.getType() == Material.FENCE_GATE || b.getType() == Material.BIRCH_FENCE_GATE || b.getType() == Material.SPRUCE_FENCE_GATE || b.getType() == Material.JUNGLE_FENCE_GATE || b.getType() == Material.ACACIA_FENCE_GATE || b.getType() == Material.DARK_OAK_FENCE_GATE) {
+			else if (b.getType() == Material.OAK_FENCE_GATE || b.getType() == Material.BIRCH_FENCE_GATE || b.getType() == Material.SPRUCE_FENCE_GATE || b.getType() == Material.JUNGLE_FENCE_GATE || b.getType() == Material.ACACIA_FENCE_GATE || b.getType() == Material.DARK_OAK_FENCE_GATE) {
 				if (Protection.getLockManager().isLocked(b) && !Protection.getLockManager().hasPermission(b, e.getPlayer())) {
 					cancel = true;
 					type = "portti";
@@ -94,13 +94,13 @@ public class LockListener implements Listener {
 					type = "arkku";
 				}
 			}
-			else if (b.getType() == Material.FURNACE || b.getType() == Material.BURNING_FURNACE) {
+			else if (b.getType() == Material.FURNACE) {
 				if (Protection.getLockManager().isLocked(b) && !Protection.getLockManager().hasPermission(b, e.getPlayer())) {
 					cancel = true;
 					type = "uuni";
 				}
 			}
-			else if (b.getType() == Material.TRAP_DOOR) {
+			else if (b.getType() == Material.OAK_TRAPDOOR || b.getType() == Material.BIRCH_TRAPDOOR || b.getType() == Material.SPRUCE_TRAPDOOR || b.getType() == Material.JUNGLE_TRAPDOOR || b.getType() == Material.ACACIA_TRAPDOOR || b.getType() == Material.DARK_OAK_TRAPDOOR) {
 				if (Protection.getLockManager().isLocked(b) && !Protection.getLockManager().hasPermission(b, e.getPlayer())) {
 					cancel = true;
 					type = "ansaluukku";
@@ -117,13 +117,13 @@ public class LockListener implements Listener {
 			if (e.getPlayer().isSneaking()) {
 				boolean show = false;
 				String type = "";
-				if (b.getType() == Material.WOODEN_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR) {
+				if (b.getType() == Material.OAK_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR) {
 					if (Protection.getLockManager().isLocked(b) && Protection.getLockManager().hasPermission(b, e.getPlayer())) {
 						show = true;
 						type = "ovi";
 					}
 				}
-				else if (b.getType() == Material.FENCE_GATE || b.getType() == Material.BIRCH_FENCE_GATE || b.getType() == Material.SPRUCE_FENCE_GATE || b.getType() == Material.JUNGLE_FENCE_GATE || b.getType() == Material.ACACIA_FENCE_GATE || b.getType() == Material.DARK_OAK_FENCE_GATE) {
+				else if (b.getType() == Material.OAK_FENCE_GATE || b.getType() == Material.BIRCH_FENCE_GATE || b.getType() == Material.SPRUCE_FENCE_GATE || b.getType() == Material.JUNGLE_FENCE_GATE || b.getType() == Material.ACACIA_FENCE_GATE || b.getType() == Material.DARK_OAK_FENCE_GATE) {
 					if (Protection.getLockManager().isLocked(b) && Protection.getLockManager().hasPermission(b, e.getPlayer())) {
 						show = true;
 						type = "portti";
@@ -135,13 +135,13 @@ public class LockListener implements Listener {
 						type = "arkku";
 					}
 				}
-				else if (b.getType() == Material.FURNACE || b.getType() == Material.BURNING_FURNACE) {
+				else if (b.getType() == Material.FURNACE) {
 					if (Protection.getLockManager().isLocked(b) && Protection.getLockManager().hasPermission(b, e.getPlayer())) {
 						show = true;
 						type = "uuni";
 					}
 				}
-				else if (b.getType() == Material.TRAP_DOOR) {
+				else if (b.getType() == Material.OAK_TRAPDOOR || b.getType() == Material.BIRCH_TRAPDOOR || b.getType() == Material.SPRUCE_TRAPDOOR || b.getType() == Material.JUNGLE_TRAPDOOR || b.getType() == Material.ACACIA_TRAPDOOR || b.getType() == Material.DARK_OAK_TRAPDOOR) {
 					if (Protection.getLockManager().isLocked(b) && Protection.getLockManager().hasPermission(b, e.getPlayer())) {
 						show = true;
 						type = "ansaluukku";
@@ -206,13 +206,13 @@ public class LockListener implements Listener {
 		Block b = e.getBlock();
 		boolean cancel = false;
 		String type = "";
-		if (b.getType() == Material.WOODEN_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR) {
+		if (b.getType() == Material.OAK_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR) {
 			if (Protection.getLockManager().isLocked(b)) {
 				cancel = true;
 				type = "ovi";
 			}
 		}
-		else if (b.getType() == Material.FENCE_GATE || b.getType() == Material.BIRCH_FENCE_GATE || b.getType() == Material.SPRUCE_FENCE_GATE || b.getType() == Material.JUNGLE_FENCE_GATE || b.getType() == Material.ACACIA_FENCE_GATE || b.getType() == Material.DARK_OAK_FENCE_GATE) {
+		else if (b.getType() == Material.OAK_FENCE_GATE || b.getType() == Material.BIRCH_FENCE_GATE || b.getType() == Material.SPRUCE_FENCE_GATE || b.getType() == Material.JUNGLE_FENCE_GATE || b.getType() == Material.ACACIA_FENCE_GATE || b.getType() == Material.DARK_OAK_FENCE_GATE) {
 			if (Protection.getLockManager().isLocked(b)) {
 				cancel = true;
 				type = "portti";
@@ -224,13 +224,13 @@ public class LockListener implements Listener {
 				type = "arkku";
 			}
 		}
-		else if (b.getType() == Material.FURNACE || b.getType() == Material.BURNING_FURNACE) {
+		else if (b.getType() == Material.FURNACE) {
 			if (Protection.getLockManager().isLocked(b)) {
 				cancel = true;
 				type = "uuni";
 			}
 		}
-		else if (b.getType() == Material.TRAP_DOOR) {
+		else if (b.getType() == Material.OAK_TRAPDOOR || b.getType() == Material.BIRCH_TRAPDOOR || b.getType() == Material.SPRUCE_TRAPDOOR || b.getType() == Material.JUNGLE_TRAPDOOR || b.getType() == Material.ACACIA_TRAPDOOR || b.getType() == Material.DARK_OAK_TRAPDOOR) {
 			if (Protection.getLockManager().isLocked(b)) {
 				cancel = true;
 				type = "ansaluukku";
@@ -255,8 +255,10 @@ public class LockListener implements Listener {
 	@EventHandler
 	public void onBlockRedstone(BlockRedstoneEvent e) {
 		Block b = e.getBlock();
-		if (b.getType() == Material.TRAP_DOOR || b.getType() == Material.WOODEN_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR || 
-				b.getType() == Material.FENCE_GATE || b.getType() == Material.BIRCH_FENCE_GATE || b.getType() == Material.SPRUCE_FENCE_GATE || b.getType() == Material.JUNGLE_FENCE_GATE || b.getType() == Material.ACACIA_FENCE_GATE || b.getType() == Material.DARK_OAK_FENCE_GATE) {
+		if (b.getType() == Material.OAK_TRAPDOOR || b.getType() == Material.BIRCH_TRAPDOOR || b.getType() == Material.SPRUCE_TRAPDOOR || b.getType() == Material.JUNGLE_TRAPDOOR || b.getType() == Material.ACACIA_TRAPDOOR || 
+				b.getType() == Material.DARK_OAK_TRAPDOOR || b.getType() == Material.OAK_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || 
+				b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR || b.getType() == Material.OAK_FENCE_GATE || b.getType() == Material.BIRCH_FENCE_GATE || b.getType() == Material.SPRUCE_FENCE_GATE || 
+				b.getType() == Material.JUNGLE_FENCE_GATE || b.getType() == Material.ACACIA_FENCE_GATE || b.getType() == Material.DARK_OAK_FENCE_GATE) {
 			if (Protection.getLockManager().isLocked(b) && !Protection.getLockManager().getPermissions(b).contains("*") && !Protection.getLockManager().getPermissions(b).contains("+")) {
 				e.setNewCurrent(e.getOldCurrent());
 			}

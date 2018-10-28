@@ -87,7 +87,7 @@ public class LockCommand implements CommandExecutor {
 			if (b.getType() == Material.AIR) {
 				p.sendMessage(tc3 + "Sinun täytyy seisoa " + tc4 + "oven" + tc3 + ", " + tc4 + "arkun" + tc3 + ", " + tc4 + "uunin" + tc3 + ", " + tc4 + "portin" + tc3 + " tai " + tc4 + "ansaluukun\n" + tc3 + " vieressä ja katsoa sitä kohti voidaksesi lukita sen.");
 			}
-			else if (b.getType() == Material.WOODEN_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR) {
+			else if (b.getType() == Material.OAK_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR) {
 				Door d = (Door) b.getState().getData();
 				if (p.getLocation().distance(b.getLocation()) > 5) {
 					p.sendMessage(tc3 + "Olet liian kaukana voidaksesi lukita tämän oven!");
@@ -111,16 +111,16 @@ public class LockCommand implements CommandExecutor {
 					p.playSound(p.getLocation(), Sound.BLOCK_CHEST_LOCKED, 1, 2);
 				}
 			}
-			else if (b.getType() == Material.FENCE_GATE || b.getType() == Material.BIRCH_FENCE_GATE || b.getType() == Material.SPRUCE_FENCE_GATE || b.getType() == Material.JUNGLE_FENCE_GATE || b.getType() == Material.ACACIA_FENCE_GATE || b.getType() == Material.DARK_OAK_FENCE_GATE) {
+			else if (b.getType() == Material.OAK_FENCE_GATE || b.getType() == Material.BIRCH_FENCE_GATE || b.getType() == Material.SPRUCE_FENCE_GATE || b.getType() == Material.JUNGLE_FENCE_GATE || b.getType() == Material.ACACIA_FENCE_GATE || b.getType() == Material.DARK_OAK_FENCE_GATE) {
 				lukitse(p, b, "portti", "portin", "portteja", tc2, tc3);
 			}
 			else if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST) {
 				lukitse(p, b, "arkku", "arkun", "arkkuja", tc2, tc3);
 			}
-			else if (b.getType() == Material.FURNACE || b.getType() == Material.BURNING_FURNACE) {
+			else if (b.getType() == Material.FURNACE) {
 				lukitse(p, b, "uuni", "uunin", "uuneja", tc2, tc3);
 			}
-			else if (b.getType() == Material.TRAP_DOOR) {
+			else if (b.getType() == Material.OAK_TRAPDOOR || b.getType() == Material.BIRCH_TRAPDOOR || b.getType() == Material.SPRUCE_TRAPDOOR || b.getType() == Material.JUNGLE_TRAPDOOR || b.getType() == Material.ACACIA_TRAPDOOR || b.getType() == Material.DARK_OAK_TRAPDOOR) {
 				lukitse(p, b, "ansaluukku", "ansaluukun", "ansaluukkuja", tc2, tc3);
 			}
 			else {
@@ -133,19 +133,19 @@ public class LockCommand implements CommandExecutor {
 			if (b.getType() == Material.AIR) {
 				p.sendMessage(tc3 + "Sinun täytyy seisoa " + tc4 + "oven" + tc3 + ", " + tc4 + "arkun" + tc3 + ", " + tc4 + "uunin" + tc3 + ", " + tc4 + "portin" + tc3 + " tai " + tc4 + "ansaluukun\n" + tc3 + " vieressä ja katsoa sitä kohti voidaksesi poistaa sen lukituksen.");
 			}
-			else if (b.getType() == Material.WOODEN_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR) {
+			else if (b.getType() == Material.OAK_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR) {
 				avaa(p, b, "ovi", "oven", "ovesta", "ovista", tc2, tc3);
 			}
-			else if (b.getType() == Material.FENCE_GATE || b.getType() == Material.BIRCH_FENCE_GATE || b.getType() == Material.SPRUCE_FENCE_GATE || b.getType() == Material.JUNGLE_FENCE_GATE || b.getType() == Material.ACACIA_FENCE_GATE || b.getType() == Material.DARK_OAK_FENCE_GATE) {
+			else if (b.getType() == Material.OAK_FENCE_GATE || b.getType() == Material.BIRCH_FENCE_GATE || b.getType() == Material.SPRUCE_FENCE_GATE || b.getType() == Material.JUNGLE_FENCE_GATE || b.getType() == Material.ACACIA_FENCE_GATE || b.getType() == Material.DARK_OAK_FENCE_GATE) {
 				avaa(p, b, "portti", "portin", "portista", "porteista", tc2, tc3);
 			}
 			else if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST) {
 				avaa(p, b, "arkku", "arkun", "arkusta", "arkuista", tc2, tc3);
 			}
-			else if (b.getType() == Material.FURNACE || b.getType() == Material.BURNING_FURNACE) {
+			else if (b.getType() == Material.FURNACE ) {
 				avaa(p, b, "uuni", "uunin", "uunista", "uuneista", tc2, tc3);
 			}
-			else if (b.getType() == Material.TRAP_DOOR) {
+			else if (b.getType() == Material.OAK_TRAPDOOR || b.getType() == Material.BIRCH_TRAPDOOR || b.getType() == Material.SPRUCE_TRAPDOOR || b.getType() == Material.JUNGLE_TRAPDOOR || b.getType() == Material.ACACIA_TRAPDOOR || b.getType() == Material.DARK_OAK_TRAPDOOR) {
 				avaa(p, b, "ansaluukku", "ansaluukun", "ansaluukusta", "ansaluukuista", tc2, tc3);
 			}
 			else {
@@ -159,19 +159,19 @@ public class LockCommand implements CommandExecutor {
 				if (b.getType() == Material.AIR) {
 					p.sendMessage(tc3 + "Sinun täytyy seisoa " + tc4 + "oven" + tc3 + ", " + tc4 + "arkun" + tc3 + ", " + tc4 + "uunin" + tc3 + ", " + tc4 + "portin" + tc3 + " tai " + tc4 + "ansaluukun\n" + tc3 + " vieressä ja katsoa sitä kohti voidaksesi muokata sen oikeuksia.");
 				}
-				else if (b.getType() == Material.WOODEN_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR) {
+				else if (b.getType() == Material.OAK_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR) {
 					oikeudet(p, b, args, "ovi", "ovea", "oveen", "oven", tc1, tc2, tc3);
 				}
-				else if (b.getType() == Material.FENCE_GATE || b.getType() == Material.BIRCH_FENCE_GATE || b.getType() == Material.SPRUCE_FENCE_GATE || b.getType() == Material.JUNGLE_FENCE_GATE || b.getType() == Material.ACACIA_FENCE_GATE || b.getType() == Material.DARK_OAK_FENCE_GATE) {
+				else if (b.getType() == Material.OAK_FENCE_GATE || b.getType() == Material.BIRCH_FENCE_GATE || b.getType() == Material.SPRUCE_FENCE_GATE || b.getType() == Material.JUNGLE_FENCE_GATE || b.getType() == Material.ACACIA_FENCE_GATE || b.getType() == Material.DARK_OAK_FENCE_GATE) {
 					oikeudet(p, b, args, "portti", "porttia", "porttin", "portteihin", tc1, tc2, tc3);
 				}
 				else if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST) {
 					oikeudet(p, b, args, "arkku", "arkkua", "arkkun", "arkkuihin", tc1, tc2, tc3);
 				}
-				else if (b.getType() == Material.FURNACE || b.getType() == Material.BURNING_FURNACE) {
+				else if (b.getType() == Material.FURNACE) {
 					oikeudet(p, b, args, "uuni", "uunia", "uunin", "uuneihin", tc1, tc2, tc3);
 				}
-				else if (b.getType() == Material.TRAP_DOOR) {
+				else if (b.getType() == Material.OAK_TRAPDOOR || b.getType() == Material.BIRCH_TRAPDOOR || b.getType() == Material.SPRUCE_TRAPDOOR || b.getType() == Material.JUNGLE_TRAPDOOR || b.getType() == Material.ACACIA_TRAPDOOR || b.getType() == Material.DARK_OAK_TRAPDOOR) {
 					oikeudet(p, b, args, "ansaluukku", "ansaluukkua", "ansaluukun", "ansaluukkuihin", tc1, tc2, tc3);
 				}
 				else {

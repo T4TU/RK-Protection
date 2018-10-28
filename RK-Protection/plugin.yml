@@ -1,8 +1,9 @@
 name: RK-Protection
 author: T4TU_
 version: 2
-depend: [RK-Core]
 main: me.t4tu.rkprotection.Protection
+depend: [RK-Core]
+api-version: 1.13
 commands:
     pvpbypass:
     area:

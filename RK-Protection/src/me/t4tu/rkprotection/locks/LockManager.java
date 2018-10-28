@@ -280,8 +280,8 @@ public class LockManager {
 	
 	private Block getRealLockedBlock(Block block) {
 		Location location = block.getLocation();
-		if (block.getType() == Material.WOODEN_DOOR || block.getType() == Material.BIRCH_DOOR || block.getType() == Material.SPRUCE_DOOR || block.getType() == Material.JUNGLE_DOOR || block.getType() == Material.ACACIA_DOOR || block.getType() == Material.DARK_OAK_DOOR) {
-			Door door = (Door)block.getState().getData();
+		if (block.getType() == Material.OAK_DOOR || block.getType() == Material.BIRCH_DOOR || block.getType() == Material.SPRUCE_DOOR || block.getType() == Material.JUNGLE_DOOR || block.getType() == Material.ACACIA_DOOR || block.getType() == Material.DARK_OAK_DOOR) {
+			Door door = (Door) block.getState().getData();
 			if (door.isTopHalf()) {
 				if (isLockedExact(block.getRelative(BlockFace.DOWN).getLocation())) {
 					return block.getRelative(BlockFace.DOWN);
