@@ -44,7 +44,7 @@ public class Protection extends JavaPlugin {
 		registerCommand("lukitse", lockCommand, true);
 		registerCommand("avaa", lockCommand, true);
 		registerCommand("oikeudet", lockCommand, true);
-		registerCommand("bypass", lockCommand, true);
+		registerCommand("bypass", lockCommand, false);
 		areaManager.loadAreasFromConfig();
 	}
 	
