@@ -47,12 +47,6 @@ public class AreaListener implements Listener {
 			SpawnReason.LIGHTNING, SpawnReason.JOCKEY, SpawnReason.REINFORCEMENTS, SpawnReason.SPAWNER, SpawnReason.SILVERFISH_BLOCK, SpawnReason.MOUNT, SpawnReason.EGG);
 	private static final List<Material> CONTAINERS = Arrays.asList(Material.CHEST, Material.TRAPPED_CHEST, Material.ENDER_CHEST, Material.CRAFTING_TABLE, Material.FURNACE, Material.ANVIL, 
 			Material.ENCHANTING_TABLE, Material.JUKEBOX, Material.DISPENSER, Material.DROPPER, Material.HOPPER, Material.BREWING_STAND);
-	private static final List<Material> DOORS = Arrays.asList(Material.OAK_DOOR, Material.SPRUCE_DOOR, Material.BIRCH_DOOR, Material.JUNGLE_DOOR, Material.ACACIA_DOOR, Material.DARK_OAK_DOOR, 
-			Material.IRON_DOOR, Material.OAK_TRAPDOOR, Material.BIRCH_TRAPDOOR, Material.SPRUCE_TRAPDOOR, Material.JUNGLE_TRAPDOOR, Material.ACACIA_TRAPDOOR, Material.DARK_OAK_TRAPDOOR,
-			Material.IRON_TRAPDOOR, Material.OAK_FENCE_GATE, Material.SPRUCE_FENCE_GATE, Material.BIRCH_FENCE_GATE, Material.JUNGLE_FENCE_GATE, Material.ACACIA_FENCE_GATE, Material.DARK_OAK_FENCE_GATE);
-	private static final List<Material> REDSTONE = Arrays.asList(Material.OAK_BUTTON, Material.BIRCH_BUTTON, Material.SPRUCE_BUTTON, Material.JUNGLE_BUTTON, Material.ACACIA_BUTTON, Material.DARK_OAK_BUTTON,
-			Material.STONE_BUTTON, Material.LEVER, Material.OAK_PRESSURE_PLATE, Material.BIRCH_PRESSURE_PLATE, Material.SPRUCE_PRESSURE_PLATE, Material.JUNGLE_PRESSURE_PLATE, Material.ACACIA_PRESSURE_PLATE,
-			Material.DARK_OAK_PRESSURE_PLATE, Material.STONE_PRESSURE_PLATE, Material.HEAVY_WEIGHTED_PRESSURE_PLATE, Material.LIGHT_WEIGHTED_PRESSURE_PLATE);
 	
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent e) {
@@ -234,10 +228,14 @@ public class AreaListener implements Listener {
 					if (area.hasFlag(Flag.ALLOW_CONTAINERS) && CONTAINERS.contains(e.getClickedBlock().getType())) {
 						return;
 					}
-					if (area.hasFlag(Flag.ALLOW_DOORS) && DOORS.contains(e.getClickedBlock().getType())) {
+					if (area.hasFlag(Flag.ALLOW_DOORS) && (e.getClickedBlock().getType().toString().contains("DOOR") || 
+							e.getClickedBlock().getType().toString().contains("TRAPDOOR") || 
+							e.getClickedBlock().getType().toString().contains("FENCE_GATE"))) {
 						return;
 					}
-					if (area.hasFlag(Flag.ALLOW_REDSTONE) && REDSTONE.contains(e.getClickedBlock().getType())) {
+					if (area.hasFlag(Flag.ALLOW_REDSTONE) && (e.getClickedBlock().getType().toString().contains("BUTTON") || 
+							e.getClickedBlock().getType().toString().contains("PRESSURE_PLATE") || 
+							e.getClickedBlock().getType().toString().contains("LEVER"))) {
 						return;
 					}
 					e.setCancelled(true);
