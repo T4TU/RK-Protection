@@ -6,10 +6,15 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Bisected.Half;
+import org.bukkit.block.data.type.Chest;
+import org.bukkit.block.data.type.Chest.Type;
+import org.bukkit.block.data.type.Door;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.material.Door;
 
+import me.t4tu.rkcore.parties.Party;
+import me.t4tu.rkcore.utils.CoreUtils;
 import me.t4tu.rkprotection.Protection;
 
 public class LockManager {
@@ -151,17 +156,23 @@ public class LockManager {
 				return true;
 			}
 			else {
-				ArrayList<String> permissions = getPermissions(block);
-				if (permissions.contains("*")) {
+				Party party = CoreUtils.getCore().getPartyManager().getPartyOfPlayer(player);
+				if (party != null && party.getMembers().contains(uuid)) {
 					return true;
 				}
 				else {
-					for (String permission : permissions) {
-						if (permission.equals(player.getUniqueId().toString())) {
-							return true;
-						}
+					ArrayList<String> permissions = getPermissions(block);
+					if (permissions.contains("*")) {
+						return true;
 					}
-					return false;
+					else {
+						for (String permission : permissions) {
+							if (permission.equals(player.getUniqueId().toString())) {
+								return true;
+							}
+						}
+						return false;
+					}
 				}
 			}
 		}
@@ -281,8 +292,8 @@ public class LockManager {
 	private Block getRealLockedBlock(Block block) {
 		Location location = block.getLocation();
 		if (block.getType() == Material.OAK_DOOR || block.getType() == Material.BIRCH_DOOR || block.getType() == Material.SPRUCE_DOOR || block.getType() == Material.JUNGLE_DOOR || block.getType() == Material.ACACIA_DOOR || block.getType() == Material.DARK_OAK_DOOR) {
-			Door door = (Door) block.getState().getData();
-			if (door.isTopHalf()) {
+			Door door = (Door) block.getBlockData();
+			if (door.getHalf() == Half.TOP) {
 				if (isLockedExact(block.getRelative(BlockFace.DOWN).getLocation())) {
 					return block.getRelative(BlockFace.DOWN);
 				}
@@ -299,41 +310,18 @@ public class LockManager {
 				}
 			}
 		}
-		else if (block.getType() == Material.CHEST) {
+		else if (block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST) {
+			Chest chest = (Chest) block.getBlockData();
+			Block left = block.getRelative(getNextCWFace(chest.getFacing()));
+			Block right = block.getRelative(getNextCCWFace(chest.getFacing()));
 			if (isLockedExact(location)) {
 				return block;
 			}
-			else if (block.getRelative(BlockFace.NORTH).getType() == Material.CHEST && isLockedExact(block.getRelative(BlockFace.NORTH).getLocation())) {
-				return block.getRelative(BlockFace.NORTH);
+			else if (chest.getType() == Type.RIGHT && isLockedExact(right.getLocation())) {
+				return right;
 			}
-			else if (block.getRelative(BlockFace.SOUTH).getType() == Material.CHEST && isLockedExact(block.getRelative(BlockFace.SOUTH).getLocation())) {
-				return block.getRelative(BlockFace.SOUTH);
-			}
-			else if (block.getRelative(BlockFace.EAST).getType() == Material.CHEST && isLockedExact(block.getRelative(BlockFace.EAST).getLocation())) {
-				return block.getRelative(BlockFace.EAST);
-			}
-			else if (block.getRelative(BlockFace.WEST).getType() == Material.CHEST && isLockedExact(block.getRelative(BlockFace.WEST).getLocation())) {
-				return block.getRelative(BlockFace.WEST);
-			}
-			else {
-				return null;
-			}
-		}
-		else if (block.getType() == Material.TRAPPED_CHEST) {
-			if (isLockedExact(location)) {
-				return block;
-			}
-			else if (block.getRelative(BlockFace.NORTH).getType() == Material.TRAPPED_CHEST && isLockedExact(block.getRelative(BlockFace.NORTH).getLocation())) {
-				return block.getRelative(BlockFace.NORTH);
-			}
-			else if (block.getRelative(BlockFace.SOUTH).getType() == Material.TRAPPED_CHEST && isLockedExact(block.getRelative(BlockFace.SOUTH).getLocation())) {
-				return block.getRelative(BlockFace.SOUTH);
-			}
-			else if (block.getRelative(BlockFace.EAST).getType() == Material.TRAPPED_CHEST && isLockedExact(block.getRelative(BlockFace.EAST).getLocation())) {
-				return block.getRelative(BlockFace.EAST);
-			}
-			else if (block.getRelative(BlockFace.WEST).getType() == Material.TRAPPED_CHEST && isLockedExact(block.getRelative(BlockFace.WEST).getLocation())) {
-				return block.getRelative(BlockFace.WEST);
+			else if (chest.getType() == Type.LEFT && isLockedExact(left.getLocation())) {
+				return left;
 			}
 			else {
 				return null;
@@ -346,6 +334,36 @@ public class LockManager {
 			else {
 				return null;
 			}
+		}
+	}
+	
+	private BlockFace getNextCCWFace(BlockFace face) {
+		switch (face) {
+			case NORTH:
+				return BlockFace.WEST;
+			case WEST:
+				return BlockFace.SOUTH;
+			case SOUTH:
+				return BlockFace.EAST;
+			case EAST:
+				return BlockFace.NORTH;
+			default:
+				return face;
+		}
+	}
+	
+	private BlockFace getNextCWFace(BlockFace face) {
+		switch (face) {
+			case NORTH:
+				return BlockFace.EAST;
+			case EAST:
+				return BlockFace.SOUTH;
+			case SOUTH:
+				return BlockFace.WEST;
+			case WEST:
+				return BlockFace.NORTH;
+			default:
+				return face;
 		}
 	}
 }

@@ -7,11 +7,12 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Bisected.Half;
+import org.bukkit.block.data.type.Door;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.material.Door;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import me.t4tu.rkcore.utils.CoreUtils;
@@ -88,7 +89,7 @@ public class LockCommand implements CommandExecutor {
 				p.sendMessage(tc3 + "Sinun täytyy seisoa " + tc4 + "oven" + tc3 + ", " + tc4 + "arkun" + tc3 + ", " + tc4 + "uunin" + tc3 + ", " + tc4 + "portin" + tc3 + " tai " + tc4 + "ansaluukun\n" + tc3 + " vieressä ja katsoa sitä kohti voidaksesi lukita sen.");
 			}
 			else if (b.getType() == Material.OAK_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR) {
-				Door d = (Door) b.getState().getData();
+				Door d = (Door) b.getBlockData();
 				if (p.getLocation().distance(b.getLocation()) > 5) {
 					p.sendMessage(tc3 + "Olet liian kaukana voidaksesi lukita tämän oven!");
 				}
@@ -101,10 +102,12 @@ public class LockCommand implements CommandExecutor {
 					p.playSound(p.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1, 2);
 				}
 				else {
-					if (d.isTopHalf()) {
+					if (d.getHalf() == Half.TOP) {
+						p.sendMessage("yläosa");
 						Protection.getLockManager().lock(b.getRelative(BlockFace.DOWN), p);
 					}
 					else {
+						p.sendMessage("alaosa");
 						Protection.getLockManager().lock(b, p);
 					}
 					p.sendMessage(tc2 + "Lukitsit oven. Kukaan muu ei voi enää avata tai sulkea sitä.");
@@ -199,7 +202,7 @@ public class LockCommand implements CommandExecutor {
 			p.sendMessage(tc3 + "Tämä " + kuutio + " on jo lukittu!");
 			p.playSound(p.getLocation(), Sound.BLOCK_CHEST_LOCKED, 1, 2);
 		}
-		else if (Protection.getAreaManager().getArea(b.getLocation()) != null && !Protection.getAreaManager().getArea(b.getLocation()).hasFlag(Flag.ALLOW_LOCKING) && !CoreUtils.hasRank(p, "ylläpitäjä") && !p.isOp()) {
+		else if (Protection.getAreaManager().getArea(b.getLocation()) != null && !Protection.getAreaManager().getArea(b.getLocation()).hasFlag(Flag.ALLOW_LOCKING) && !CoreUtils.hasRank(p, "ylläpitäjä")) {
 			p.sendMessage(tc3 + "Et voi lukita " + kuutioita + " tällä alueella!");
 			p.playSound(p.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1, 2);
 		}
