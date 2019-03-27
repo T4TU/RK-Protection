@@ -285,18 +285,10 @@ public class AreaListener implements Listener {
 		Area area = Protection.getAreaManager().getArea(e.getLocation());
 		if (area != null) {
 			EntityType t = e.getEntityType();
-			if ((t == EntityType.BLAZE || t == EntityType.CAVE_SPIDER || t == EntityType.CREEPER || t == EntityType.ENDERMAN || 
-					t == EntityType.ENDERMITE || t == EntityType.GHAST || t == EntityType.GUARDIAN || t == EntityType.MAGMA_CUBE || 
-					t == EntityType.PIG_ZOMBIE || t == EntityType.SHULKER_BULLET || t == EntityType.SILVERFISH || t == EntityType.SKELETON || 
-					t == EntityType.SLIME || t == EntityType.SPIDER || t == EntityType.WITCH || t == EntityType.ZOMBIE || t == EntityType.ZOMBIE_VILLAGER || 
-					t == EntityType.VEX || t == EntityType.EVOKER || t == EntityType.HUSK || t == EntityType.STRAY) && 
-					area.hasFlag(Flag.NO_MOBS) && REASONS.contains(e.getSpawnReason())) {
+			if (mobs.contains(t) && area.hasFlag(Flag.NO_MOBS) && REASONS.contains(e.getSpawnReason())) {
 				e.setCancelled(true);
 			}
-			else if ((t == EntityType.CHICKEN || t == EntityType.COW || t == EntityType.DONKEY || t == EntityType.HORSE || 
-					t == EntityType.LLAMA || t == EntityType.MULE || t == EntityType.OCELOT || t == EntityType.PIG || 
-					t == EntityType.POLAR_BEAR || t == EntityType.RABBIT || t == EntityType.SHEEP || t == EntityType.WOLF|| 
-					t == EntityType.SQUID) && area.hasFlag(Flag.NO_ANIMALS) && REASONS.contains(e.getSpawnReason())) {
+			else if (animals.contains(t) && area.hasFlag(Flag.NO_ANIMALS) && REASONS.contains(e.getSpawnReason())) {
 				e.setCancelled(true);
 			}
 		}
@@ -374,4 +366,13 @@ public class AreaListener implements Listener {
 			}
 		}
 	}
+	
+	private List<EntityType> mobs = Arrays.asList(EntityType.BLAZE, EntityType.CAVE_SPIDER, EntityType.CREEPER, EntityType.DROWNED, EntityType.ELDER_GUARDIAN, EntityType.ENDER_DRAGON,
+			EntityType.ENDERMAN, EntityType.ENDERMITE, EntityType.EVOKER, EntityType.GHAST, EntityType.GIANT, EntityType.GUARDIAN, EntityType.HUSK, EntityType.ILLUSIONER, EntityType.MAGMA_CUBE,
+			EntityType.PHANTOM, EntityType.PIG_ZOMBIE, EntityType.SHULKER, EntityType.SILVERFISH, EntityType.SKELETON, EntityType.SKELETON_HORSE, EntityType.SLIME, EntityType.SPIDER,
+			EntityType.VEX, EntityType.VINDICATOR, EntityType.WITCH, EntityType.WITHER, EntityType.WITHER_SKELETON, EntityType.ZOMBIE, EntityType.ZOMBIE_HORSE, EntityType.ZOMBIE_VILLAGER);
+	
+	private List<EntityType> animals = Arrays.asList(EntityType.BAT, EntityType.CHICKEN, EntityType.COD, EntityType.COW, EntityType.DOLPHIN, EntityType.DONKEY, EntityType.HORSE,
+			EntityType.IRON_GOLEM, EntityType.LLAMA, EntityType.MULE, EntityType.MUSHROOM_COW, EntityType.OCELOT, EntityType.PARROT, EntityType.PIG, EntityType.POLAR_BEAR, EntityType.PUFFERFISH,
+			EntityType.RABBIT, EntityType.SALMON, EntityType.SHEEP, EntityType.SNOWMAN, EntityType.SQUID, EntityType.TROPICAL_FISH, EntityType.TURTLE, EntityType.VILLAGER, EntityType.WOLF);
 }
