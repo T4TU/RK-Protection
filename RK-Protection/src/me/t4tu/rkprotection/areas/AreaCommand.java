@@ -240,11 +240,11 @@ public class AreaCommand implements CommandExecutor {
 						p.sendMessage(tc2 + "Ladattiin alueet uudestaan!");
 					}
 					else {
-						p.sendMessage(usage + "/area <list/add/remove/flags/flag/listborder/addborder/removeborder/reload>");
+						p.sendMessage(usage + "/area list/add/remove/flags/flag/listborder/addborder/removeborder/reload");
 					}
 				}
 				else {
-					p.sendMessage(usage + "/area <list/add/remove/flags/flag/listborder/addborder/removeborder/reload>");
+					p.sendMessage(usage + "/area list/add/remove/flags/flag/listborder/addborder/removeborder/reload");
 				}
 			}
 			else {
