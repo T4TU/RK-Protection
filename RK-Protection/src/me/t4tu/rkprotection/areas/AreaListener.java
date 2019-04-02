@@ -2,8 +2,10 @@ package me.t4tu.rkprotection.areas;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
@@ -37,6 +39,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
+import org.bukkit.util.Vector;
 
 import me.t4tu.rkcore.utils.CoreUtils;
 import me.t4tu.rkprotection.Protection;
@@ -85,6 +88,16 @@ public class AreaListener implements Listener {
 			}
 			else if (to != null && from == null && to.hasFlag(Flag.SHOW_PROTECTED_MESSAGE)) {
 				e.getPlayer().sendMessage("§2Saavut suojatulle alueelle. Et voi rakentaa täällä.");
+			}
+			
+			if (to != null && to.hasFlag(Flag.THRONE)) {
+				if (!throneMessages.isEmpty()) {
+					String message = throneMessages.get(new Random().nextInt(throneMessages.size()));
+					e.getPlayer().sendMessage(message);
+					e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
+				}
+				Vector vector = new Vector(1, 0.5, 0);
+				e.getPlayer().setVelocity(vector);
 			}
 		}
 	}
@@ -375,4 +388,7 @@ public class AreaListener implements Listener {
 	private List<EntityType> animals = Arrays.asList(EntityType.BAT, EntityType.CHICKEN, EntityType.COD, EntityType.COW, EntityType.DOLPHIN, EntityType.DONKEY, EntityType.HORSE,
 			EntityType.IRON_GOLEM, EntityType.LLAMA, EntityType.MULE, EntityType.MUSHROOM_COW, EntityType.OCELOT, EntityType.PARROT, EntityType.PIG, EntityType.POLAR_BEAR, EntityType.PUFFERFISH,
 			EntityType.RABBIT, EntityType.SALMON, EntityType.SHEEP, EntityType.SNOWMAN, EntityType.SQUID, EntityType.TROPICAL_FISH, EntityType.TURTLE, EntityType.VILLAGER, EntityType.WOLF);
+	
+	private List<String> throneMessages = Arrays.asList("§4Vartija: §cHei! Mitä ihmettä kuvittelet tekeväsi?!", "§4Vartija: §cAlas sieltä, heti!", 
+			"§4Vartija: §cTämä on Kuninkaan valtaistuin, ei sinun!", "§4Vartija: §cSinulla ei ole mitään asiaa Hänen Majesteettinsa valtaistuimelle!");
 }
