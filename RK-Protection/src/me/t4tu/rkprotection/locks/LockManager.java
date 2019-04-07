@@ -32,28 +32,15 @@ public class LockManager {
 	}
 	
 	public void lock(Block block, Player player) {
-		if (getConfig().getConfigurationSection("locks") != null) {
-			int id = getConfig().getConfigurationSection("locks").getKeys(false).size();
-			getConfig().set("locks." + id + ".uuid", player.getUniqueId().toString());
-			getConfig().set("locks." + id + ".name", player.getName());
-			getConfig().set("locks." + id + ".world", block.getWorld().getName());
-			getConfig().set("locks." + id + ".x", block.getLocation().getBlockX());
-			getConfig().set("locks." + id + ".y", block.getLocation().getBlockY());
-			getConfig().set("locks." + id + ".z", block.getLocation().getBlockZ());
-			getConfig().set("locks." + id + ".permissions", "^");
-			saveConfig();
-		}
-		else {
-			int id = 0;
-			getConfig().set("locks." + id + ".uuid", player.getUniqueId().toString());
-			getConfig().set("locks." + id + ".name", player.getName());
-			getConfig().set("locks." + id + ".world", block.getWorld().getName());
-			getConfig().set("locks." + id + ".x", block.getLocation().getBlockX());
-			getConfig().set("locks." + id + ".y", block.getLocation().getBlockY());
-			getConfig().set("locks." + id + ".z", block.getLocation().getBlockZ());
-			getConfig().set("locks." + id + ".permissions", "^");
-			saveConfig();
-		}
+		int id = getNextLockId();
+		getConfig().set("locks." + id + ".uuid", player.getUniqueId().toString());
+		getConfig().set("locks." + id + ".name", player.getName());
+		getConfig().set("locks." + id + ".world", block.getWorld().getName());
+		getConfig().set("locks." + id + ".x", block.getLocation().getBlockX());
+		getConfig().set("locks." + id + ".y", block.getLocation().getBlockY());
+		getConfig().set("locks." + id + ".z", block.getLocation().getBlockZ());
+		getConfig().set("locks." + id + ".permissions", "^");
+		saveConfig();
 	}
 	
 	public void unLock(Block block) {
@@ -364,6 +351,27 @@ public class LockManager {
 				return BlockFace.NORTH;
 			default:
 				return face;
+		}
+	}
+	
+	private int getNextLockId() {
+		if (getConfig().getConfigurationSection("locks") != null) {
+			int highest = -1;
+			for (String key : getConfig().getConfigurationSection("locks").getKeys(false)) {
+				try {
+					int id = Integer.parseInt(key);
+					if (id > highest) {
+						highest = id;
+					}
+				}
+				catch (NumberFormatException e) {
+					e.printStackTrace();
+				}
+			}
+			return highest + 1;
+		}
+		else {
+			return 0;
 		}
 	}
 }

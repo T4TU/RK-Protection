@@ -103,11 +103,9 @@ public class LockCommand implements CommandExecutor {
 				}
 				else {
 					if (d.getHalf() == Half.TOP) {
-						p.sendMessage("yläosa");
 						Protection.getLockManager().lock(b.getRelative(BlockFace.DOWN), p);
 					}
 					else {
-						p.sendMessage("alaosa");
 						Protection.getLockManager().lock(b, p);
 					}
 					p.sendMessage(tc2 + "Lukitsit oven. Kukaan muu ei voi enää avata tai sulkea sitä.");
