@@ -6,7 +6,9 @@ import java.util.Random;
 
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.World.Environment;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Painting;
@@ -14,6 +16,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -23,6 +26,7 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
@@ -30,11 +34,13 @@ import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerFishEvent.State;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -46,10 +52,13 @@ import me.t4tu.rkprotection.Protection;
 
 public class AreaListener implements Listener {
 	
-	private static final List<SpawnReason> REASONS = Arrays.asList(SpawnReason.CHUNK_GEN, SpawnReason.NATURAL, SpawnReason.ENDER_PEARL, SpawnReason.DISPENSE_EGG, SpawnReason.SLIME_SPLIT, 
-			SpawnReason.LIGHTNING, SpawnReason.JOCKEY, SpawnReason.REINFORCEMENTS, SpawnReason.SPAWNER, SpawnReason.SILVERFISH_BLOCK, SpawnReason.MOUNT, SpawnReason.EGG);
+	private static final List<SpawnReason> REASONS = Arrays.asList(SpawnReason.NATURAL, SpawnReason.ENDER_PEARL, SpawnReason.DISPENSE_EGG, SpawnReason.SLIME_SPLIT, SpawnReason.LIGHTNING, 
+			SpawnReason.JOCKEY, SpawnReason.REINFORCEMENTS, SpawnReason.SPAWNER, SpawnReason.SPAWNER_EGG, SpawnReason.BUILD_IRONGOLEM, SpawnReason.BUILD_SNOWMAN, SpawnReason.BUILD_WITHER, 
+			SpawnReason.VILLAGE_INVASION, SpawnReason.VILLAGE_DEFENSE, SpawnReason.SILVERFISH_BLOCK, SpawnReason.MOUNT, SpawnReason.EGG, SpawnReason.DEFAULT);
 	private static final List<Material> CONTAINERS = Arrays.asList(Material.CHEST, Material.TRAPPED_CHEST, Material.ENDER_CHEST, Material.CRAFTING_TABLE, Material.FURNACE, Material.ANVIL, 
-			Material.ENCHANTING_TABLE, Material.JUKEBOX, Material.DISPENSER, Material.DROPPER, Material.HOPPER, Material.BREWING_STAND);
+			Material.ENCHANTING_TABLE, Material.JUKEBOX, Material.DISPENSER, Material.DROPPER, Material.HOPPER, Material.BREWING_STAND, Material.BARREL, Material.BLAST_FURNACE, 
+			Material.CARTOGRAPHY_TABLE, Material.COMPOSTER, Material.GRINDSTONE, Material.LECTERN, Material.LOOM, Material.SMOKER, Material.STONECUTTER, Material.FLETCHING_TABLE, 
+			Material.SMITHING_TABLE);
 	
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent e) {
@@ -241,13 +250,17 @@ public class AreaListener implements Listener {
 					if (area.hasFlag(Flag.ALLOW_CONTAINERS) && CONTAINERS.contains(e.getClickedBlock().getType())) {
 						return;
 					}
-					if (area.hasFlag(Flag.ALLOW_DOORS) && (e.getClickedBlock().getType().toString().contains("DOOR") || 
-							e.getClickedBlock().getType().toString().contains("TRAPDOOR") || 
-							e.getClickedBlock().getType().toString().contains("FENCE_GATE"))) {
+					if (area.hasFlag(Flag.ALLOW_DOORS) && e.getClickedBlock().getType().toString().contains("_DOOR")) {
 						return;
 					}
-					if (area.hasFlag(Flag.ALLOW_REDSTONE) && (e.getClickedBlock().getType().toString().contains("BUTTON") || 
-							e.getClickedBlock().getType().toString().contains("PRESSURE_PLATE") || 
+					if (area.hasFlag(Flag.ALLOW_TRAPDOORS) && e.getClickedBlock().getType().toString().contains("_TRAPDOOR")) {
+						return;
+					}
+					if (area.hasFlag(Flag.ALLOW_FENCE_GATES) && e.getClickedBlock().getType().toString().contains("_FENCE_GATE")) {
+						return;
+					}
+					if (area.hasFlag(Flag.ALLOW_REDSTONE) && (e.getClickedBlock().getType().toString().contains("_BUTTON") || 
+							e.getClickedBlock().getType().toString().contains("_PRESSURE_PLATE") || 
 							e.getClickedBlock().getType().toString().contains("LEVER"))) {
 						return;
 					}
@@ -303,6 +316,15 @@ public class AreaListener implements Listener {
 			}
 			else if (animals.contains(t) && area.hasFlag(Flag.NO_ANIMALS) && REASONS.contains(e.getSpawnReason())) {
 				e.setCancelled(true);
+			}
+		}
+		if (e.getEntity().getType() == EntityType.WITHER && e.getSpawnReason() == SpawnReason.BUILD_WITHER && e.getLocation().getWorld().getEnvironment() != Environment.NETHER) {
+			e.setCancelled(true);
+			for (Entity entity : e.getEntity().getNearbyEntities(10, 10, 10)) {
+				if (entity instanceof Player) {
+					Player player = (Player) entity;
+					player.sendMessage(CoreUtils.getErrorBaseColor() + "Witherin voi luoda ainoastaan Nether-maailmassa!");
+				}
 			}
 		}
 	}
@@ -380,14 +402,52 @@ public class AreaListener implements Listener {
 		}
 	}
 	
-	private List<EntityType> mobs = Arrays.asList(EntityType.BLAZE, EntityType.CAVE_SPIDER, EntityType.CREEPER, EntityType.DROWNED, EntityType.ELDER_GUARDIAN, EntityType.ENDER_DRAGON,
-			EntityType.ENDERMAN, EntityType.ENDERMITE, EntityType.EVOKER, EntityType.GHAST, EntityType.GIANT, EntityType.GUARDIAN, EntityType.HUSK, EntityType.ILLUSIONER, EntityType.MAGMA_CUBE,
-			EntityType.PHANTOM, EntityType.PIG_ZOMBIE, EntityType.SHULKER, EntityType.SILVERFISH, EntityType.SKELETON, EntityType.SKELETON_HORSE, EntityType.SLIME, EntityType.SPIDER,
-			EntityType.VEX, EntityType.VINDICATOR, EntityType.WITCH, EntityType.WITHER, EntityType.WITHER_SKELETON, EntityType.ZOMBIE, EntityType.ZOMBIE_HORSE, EntityType.ZOMBIE_VILLAGER);
+	@EventHandler
+	public void onFoodLevelChange(FoodLevelChangeEvent e) {
+		if (e.getEntity() instanceof Player) {
+			Player player = (Player) e.getEntity();
+			if (e.getFoodLevel() < player.getFoodLevel()) {
+				Area area = Protection.getAreaManager().getArea(player.getLocation());
+				if (area != null) {
+					if (area.hasFlag(Flag.NO_HUNGER)) {
+						e.setCancelled(true);
+					}
+				}
+			}
+		}
+	}
 	
-	private List<EntityType> animals = Arrays.asList(EntityType.BAT, EntityType.CHICKEN, EntityType.COD, EntityType.COW, EntityType.DOLPHIN, EntityType.DONKEY, EntityType.HORSE,
-			EntityType.IRON_GOLEM, EntityType.LLAMA, EntityType.MULE, EntityType.MUSHROOM_COW, EntityType.OCELOT, EntityType.PARROT, EntityType.PIG, EntityType.POLAR_BEAR, EntityType.PUFFERFISH,
-			EntityType.RABBIT, EntityType.SALMON, EntityType.SHEEP, EntityType.SNOWMAN, EntityType.SQUID, EntityType.TROPICAL_FISH, EntityType.TURTLE, EntityType.VILLAGER, EntityType.WOLF);
+	@EventHandler
+	public void onPlayerPortal(PlayerPortalEvent e) {
+		Area area = Protection.getAreaManager().getArea(e.getPlayer().getLocation());
+		if (area != null && area.hasFlag(Flag.STARTING_AREA)) {
+			e.setCancelled(true);
+			CoreUtils.startTutorial(e.getPlayer());
+			e.getPlayer().stopSound(Sound.BLOCK_PORTAL_AMBIENT);
+			e.getPlayer().stopSound(Sound.BLOCK_PORTAL_TRIGGER);
+			e.getPlayer().stopSound(Sound.BLOCK_PORTAL_TRAVEL);
+		}
+	}
+	
+	@EventHandler(priority = EventPriority.LOW)
+	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent e) {
+		Area area = Protection.getAreaManager().getArea(e.getPlayer().getLocation());
+		if (area != null && area.hasFlag(Flag.STARTING_AREA)) {
+			e.setCancelled(true);
+			e.getPlayer().sendMessage(CoreUtils.getErrorBaseColor() + "Et voi käyttää komentoja vielä!");
+		}
+	}
+	
+	private List<EntityType> mobs = Arrays.asList(EntityType.BLAZE, EntityType.CAVE_SPIDER, EntityType.CREEPER, EntityType.DROWNED, EntityType.ELDER_GUARDIAN, EntityType.ENDER_DRAGON, 
+			EntityType.ENDERMAN, EntityType.ENDERMITE, EntityType.EVOKER, EntityType.GHAST, EntityType.GIANT, EntityType.GUARDIAN, EntityType.HUSK, EntityType.ILLUSIONER, EntityType.MAGMA_CUBE, 
+			EntityType.PHANTOM, EntityType.PIG_ZOMBIE, EntityType.PILLAGER, EntityType.RAVAGER, EntityType.SHULKER, EntityType.SILVERFISH, EntityType.SKELETON, EntityType.SKELETON_HORSE, 
+			EntityType.SLIME, EntityType.SPIDER, EntityType.VEX, EntityType.VINDICATOR, EntityType.WITCH, EntityType.WITHER, EntityType.WITHER_SKELETON, EntityType.ZOMBIE, EntityType.ZOMBIE_HORSE, 
+			EntityType.ZOMBIE_VILLAGER);
+	
+	private List<EntityType> animals = Arrays.asList(EntityType.BAT, EntityType.CHICKEN, EntityType.COD, EntityType.COW, EntityType.DOLPHIN, EntityType.DONKEY, EntityType.FOX, EntityType.HORSE, 
+			EntityType.IRON_GOLEM, EntityType.LLAMA, EntityType.MULE, EntityType.MUSHROOM_COW, EntityType.OCELOT, EntityType.PANDA, EntityType.PARROT, EntityType.PIG, EntityType.POLAR_BEAR, 
+			EntityType.PUFFERFISH, EntityType.RABBIT, EntityType.SALMON, EntityType.SHEEP, EntityType.SNOWMAN, EntityType.SQUID, EntityType.TRADER_LLAMA, EntityType.TROPICAL_FISH, EntityType.TURTLE, 
+			EntityType.VILLAGER, EntityType.WANDERING_TRADER, EntityType.WOLF);
 	
 	private List<String> throneMessages = Arrays.asList("§4Vartija: §cHei! Mitä ihmettä kuvittelet tekeväsi?!", "§4Vartija: §cAlas sieltä, heti!", 
 			"§4Vartija: §cTämä on Kuninkaan valtaistuin, ei sinun!", "§4Vartija: §cSinulla ei ole mitään asiaa Hänen Majesteettinsa valtaistuimelle!");

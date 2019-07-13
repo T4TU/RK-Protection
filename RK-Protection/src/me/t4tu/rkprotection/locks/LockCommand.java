@@ -1,14 +1,10 @@
 package me.t4tu.rkprotection.locks;
 
 import java.util.ArrayList;
-import java.util.Set;
-
-import org.bukkit.Material;
+import java.util.HashMap;
+import java.util.Map;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.Bisected.Half;
-import org.bukkit.block.data.type.Door;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -22,6 +18,17 @@ import me.t4tu.rkprotection.Protection;
 import me.t4tu.rkprotection.areas.Flag;
 
 public class LockCommand implements CommandExecutor {
+	
+	private Map<String, String> lockActions = new HashMap<String, String>();
+	private Map<String, String> multiLockActions = new HashMap<String, String>();
+	
+	public Map<String, String> getLockActions() {
+		return lockActions;
+	}
+	
+	public Map<String, String> getMultiLockActions() {
+		return multiLockActions;
+	}
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		
@@ -74,8 +81,8 @@ public class LockCommand implements CommandExecutor {
 				p.sendMessage("");
 				p.sendMessage("§b§lOvien, arkkujen yms. lukitseminen:");
 				p.sendMessage("");
-				p.sendMessage(" §e/lukko lukitse§b tai §e/lukitse§b - lukitse katsomasi kohde");
-				p.sendMessage(" §e/lukko avaa§b tai §e/avaa§b - poista lukitus katsomastasi kohteesta");
+				p.sendMessage(" §e/lukko lukitse§b tai §e/lukitse§b - lukitse kohde");
+				p.sendMessage(" §e/lukko avaa§b tai §e/avaa§b - poista lukitus kohteesta");
 				p.sendMessage(" §e/lukko oikeudet <nimi>§b tai §e/oikeudet <nimi>§b - anna toiselle pelaajalle (tai poista) oikeudet käyttää lukittuja kohteitasi");
 				p.sendMessage("");
 				p.sendMessage(" §bAntaessasi oikeuksia, voit käyttää pelaajan nimen sijasta myös seuraavia merkintöjä: §e*punakivi*§b, §e*suppilot*§b ja §e*kaikki*");
@@ -84,103 +91,81 @@ public class LockCommand implements CommandExecutor {
 		}
 		
 		if (cmd.getName().equalsIgnoreCase("lukitse")) {
-			Block b = p.getTargetBlock((Set<Material>) null, 10);
-			if (b.getType() == Material.AIR) {
-				p.sendMessage(tc3 + "Sinun täytyy seisoa " + tc4 + "oven" + tc3 + ", " + tc4 + "arkun" + tc3 + ", " + tc4 + "uunin" + tc3 + ", " + tc4 + "portin" + tc3 + " tai " + tc4 + "ansaluukun\n" + tc3 + " vieressä ja katsoa sitä kohti voidaksesi lukita sen.");
+			if (multiLockActions.containsKey(p.getName())) {
+				multiLockActions.remove(p.getName());
+				p.sendMessage(tc2 + "Poistuttiin lukitustilasta!");
+				p.sendTitle("", "", 0, 10, 0);
+				return true;
 			}
-			else if (b.getType() == Material.OAK_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR) {
-				Door d = (Door) b.getBlockData();
-				if (p.getLocation().distance(b.getLocation()) > 5) {
-					p.sendMessage(tc3 + "Olet liian kaukana voidaksesi lukita tämän oven!");
-				}
-				else if (Protection.getLockManager().isLocked(b)) {
-					p.sendMessage(tc3 + "Tämä ovi on jo lukittu!");
-					p.playSound(p.getLocation(), Sound.BLOCK_CHEST_LOCKED, 1, 2);
-				}
-				else if (Protection.getAreaManager().getArea(b.getLocation()) != null && !Protection.getAreaManager().getArea(b.getLocation()).hasFlag(Flag.ALLOW_LOCKING) && !CoreUtils.hasRank(p, "ylläpitäjä")) {
-					p.sendMessage(tc3 + "Et voi lukita ovia tällä alueella!");
-					p.playSound(p.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1, 2);
-				}
-				else {
-					if (d.getHalf() == Half.TOP) {
-						Protection.getLockManager().lock(b.getRelative(BlockFace.DOWN), p);
-					}
-					else {
-						Protection.getLockManager().lock(b, p);
-					}
-					p.sendMessage(tc2 + "Lukitsit oven. Kukaan muu ei voi enää avata tai sulkea sitä.");
-					p.playSound(p.getLocation(), Sound.BLOCK_CHEST_LOCKED, 1, 2);
-				}
-			}
-			else if (b.getType() == Material.OAK_FENCE_GATE || b.getType() == Material.BIRCH_FENCE_GATE || b.getType() == Material.SPRUCE_FENCE_GATE || b.getType() == Material.JUNGLE_FENCE_GATE || b.getType() == Material.ACACIA_FENCE_GATE || b.getType() == Material.DARK_OAK_FENCE_GATE) {
-				lukitse(p, b, "portti", "portin", "portteja", tc2, tc3);
-			}
-			else if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST) {
-				lukitse(p, b, "arkku", "arkun", "arkkuja", tc2, tc3);
-			}
-			else if (b.getType() == Material.FURNACE) {
-				lukitse(p, b, "uuni", "uunin", "uuneja", tc2, tc3);
-			}
-			else if (b.getType() == Material.OAK_TRAPDOOR || b.getType() == Material.BIRCH_TRAPDOOR || b.getType() == Material.SPRUCE_TRAPDOOR || b.getType() == Material.JUNGLE_TRAPDOOR || b.getType() == Material.ACACIA_TRAPDOOR || b.getType() == Material.DARK_OAK_TRAPDOOR) {
-				lukitse(p, b, "ansaluukku", "ansaluukun", "ansaluukkuja", tc2, tc3);
+			lockActions.remove(p.getName());
+			multiLockActions.remove(p.getName());
+			if (args.length >= 1 && args[0].equalsIgnoreCase("*")) {
+				multiLockActions.put(p.getName(), "lukitse");
+				p.sendMessage(tc2 + "Klikkaa kohteita, jotka haluat lukita. Poistu kirjoittamalla " + tc1 + "/lukitse" + tc2 + ".");
+				p.sendTitle("", "§fKlikkaa haluamiasi kohteita...", 0, 200, 20);
 			}
 			else {
-				p.sendMessage(tc3 + "Voit lukita ainoastaan " + tc4 + "ovia" + tc3 + ", " + tc4 + "arkkuja" + tc3 + ", " + tc4 + "uuneja" + tc3 + ", " + tc4 + "portteja" + tc3 + " ja " + tc4 + "ansaluukkuja" + tc3 + ".");
+				lockActions.put(p.getName(), "lukitse");
+				p.sendMessage(tc2 + "Klikkaa kohdetta, jonka haluat lukita...");
+				p.sendTitle("", "§fKlikkaa haluamaasi kohdetta...", 0, 200, 20);
 			}
 		}
 		
 		if (cmd.getName().equalsIgnoreCase("avaa")) {
-			Block b = p.getTargetBlock((Set<Material>) null, 10);
-			if (b.getType() == Material.AIR) {
-				p.sendMessage(tc3 + "Sinun täytyy seisoa " + tc4 + "oven" + tc3 + ", " + tc4 + "arkun" + tc3 + ", " + tc4 + "uunin" + tc3 + ", " + tc4 + "portin" + tc3 + " tai " + tc4 + "ansaluukun\n" + tc3 + " vieressä ja katsoa sitä kohti voidaksesi poistaa sen lukituksen.");
+			if (multiLockActions.containsKey(p.getName())) {
+				multiLockActions.remove(p.getName());
+				p.sendMessage(tc2 + "Poistuttiin avaustilasta!");
+				p.sendTitle("", "", 0, 10, 0);
+				return true;
 			}
-			else if (b.getType() == Material.OAK_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR) {
-				avaa(p, b, "ovi", "oven", "ovesta", "ovista", tc2, tc3);
-			}
-			else if (b.getType() == Material.OAK_FENCE_GATE || b.getType() == Material.BIRCH_FENCE_GATE || b.getType() == Material.SPRUCE_FENCE_GATE || b.getType() == Material.JUNGLE_FENCE_GATE || b.getType() == Material.ACACIA_FENCE_GATE || b.getType() == Material.DARK_OAK_FENCE_GATE) {
-				avaa(p, b, "portti", "portin", "portista", "porteista", tc2, tc3);
-			}
-			else if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST) {
-				avaa(p, b, "arkku", "arkun", "arkusta", "arkuista", tc2, tc3);
-			}
-			else if (b.getType() == Material.FURNACE ) {
-				avaa(p, b, "uuni", "uunin", "uunista", "uuneista", tc2, tc3);
-			}
-			else if (b.getType() == Material.OAK_TRAPDOOR || b.getType() == Material.BIRCH_TRAPDOOR || b.getType() == Material.SPRUCE_TRAPDOOR || b.getType() == Material.JUNGLE_TRAPDOOR || b.getType() == Material.ACACIA_TRAPDOOR || b.getType() == Material.DARK_OAK_TRAPDOOR) {
-				avaa(p, b, "ansaluukku", "ansaluukun", "ansaluukusta", "ansaluukuista", tc2, tc3);
+			lockActions.remove(p.getName());
+			multiLockActions.remove(p.getName());
+			if (args.length >= 1 && args[0].equalsIgnoreCase("*")) {
+				multiLockActions.put(p.getName(), "avaa");
+				p.sendMessage(tc2 + "Klikkaa kohteita, jotka haluat avata. Poistu kirjoittamalla " + tc1 + "/avaa" + tc2 + ".");
+				p.sendTitle("", "§fKlikkaa haluamiasi kohteita...", 0, 200, 20);
 			}
 			else {
-				p.sendMessage(tc3 + "Voit poistaa lukituksen ainoastaan lukituista kohteista.");
+				lockActions.put(p.getName(), "avaa");
+				p.sendMessage(tc2 + "Klikkaa kohdetta, jonka haluat avata...");
+				p.sendTitle("", "§fKlikkaa haluamaasi kohdetta...", 0, 200, 20);
 			}
 		}
 		
 		if (cmd.getName().equalsIgnoreCase("oikeudet")) {
 			if (args.length >= 1) {
-				Block b = p.getTargetBlock((Set<Material>) null, 10);
-				if (b.getType() == Material.AIR) {
-					p.sendMessage(tc3 + "Sinun täytyy seisoa " + tc4 + "oven" + tc3 + ", " + tc4 + "arkun" + tc3 + ", " + tc4 + "uunin" + tc3 + ", " + tc4 + "portin" + tc3 + " tai " + tc4 + "ansaluukun\n" + tc3 + " vieressä ja katsoa sitä kohti voidaksesi muokata sen oikeuksia.");
+				String s = "";
+				for (String arg : args) {
+					s += " " + arg;
 				}
-				else if (b.getType() == Material.OAK_DOOR || b.getType() == Material.BIRCH_DOOR || b.getType() == Material.SPRUCE_DOOR || b.getType() == Material.JUNGLE_DOOR || b.getType() == Material.ACACIA_DOOR || b.getType() == Material.DARK_OAK_DOOR) {
-					oikeudet(p, b, args, "ovi", "ovea", "oveen", "oven", tc1, tc2, tc3);
+				if (multiLockActions.containsKey(p.getName())) {
+					multiLockActions.remove(p.getName());
+					p.sendMessage(tc2 + "Poistuttiin oikeustilasta!");
+					p.sendTitle("", "", 0, 10, 0);
+					return true;
 				}
-				else if (b.getType() == Material.OAK_FENCE_GATE || b.getType() == Material.BIRCH_FENCE_GATE || b.getType() == Material.SPRUCE_FENCE_GATE || b.getType() == Material.JUNGLE_FENCE_GATE || b.getType() == Material.ACACIA_FENCE_GATE || b.getType() == Material.DARK_OAK_FENCE_GATE) {
-					oikeudet(p, b, args, "portti", "porttia", "porttin", "portteihin", tc1, tc2, tc3);
-				}
-				else if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST) {
-					oikeudet(p, b, args, "arkku", "arkkua", "arkkun", "arkkuihin", tc1, tc2, tc3);
-				}
-				else if (b.getType() == Material.FURNACE) {
-					oikeudet(p, b, args, "uuni", "uunia", "uunin", "uuneihin", tc1, tc2, tc3);
-				}
-				else if (b.getType() == Material.OAK_TRAPDOOR || b.getType() == Material.BIRCH_TRAPDOOR || b.getType() == Material.SPRUCE_TRAPDOOR || b.getType() == Material.JUNGLE_TRAPDOOR || b.getType() == Material.ACACIA_TRAPDOOR || b.getType() == Material.DARK_OAK_TRAPDOOR) {
-					oikeudet(p, b, args, "ansaluukku", "ansaluukkua", "ansaluukun", "ansaluukkuihin", tc1, tc2, tc3);
+				lockActions.remove(p.getName());
+				multiLockActions.remove(p.getName());
+				if (args.length >= 2 && args[1].equalsIgnoreCase("*")) {
+					multiLockActions.put(p.getName(), "oikeudet" + s);
+					p.sendMessage(tc2 + "Klikkaa kohteita, joiden oikeuksia haluat muuttaa. Poistu kirjoittamalla " + tc1 + "/oikeudet" + tc2 + ".");
+					p.sendTitle("", "§fKlikkaa haluamiasi kohteita...", 0, 200, 20);
 				}
 				else {
-					p.sendMessage(tc3 + "Voit muokata ainoastaan lukittujen kohteiden oikeuksia!");
+					lockActions.put(p.getName(), "oikeudet" + s);
+					p.sendMessage(tc2 + "Klikkaa kohdetta, jonka oikeuksia haluat muuttaa...");
+					p.sendTitle("", "§fKlikkaa haluamaasi kohdetta...", 0, 200, 20);
 				}
 			}
 			else {
-				p.sendMessage(usage + "/oikeudet <pelaaja>");
+				if (multiLockActions.containsKey(p.getName())) {
+					multiLockActions.remove(p.getName());
+					p.sendMessage(tc2 + "Poistuttiin oikeustilasta!");
+					p.sendTitle("", "", 0, 10, 0);
+				}
+				else {
+					p.sendMessage(usage + "/oikeudet <nimi>");
+				}
 			}
 		}
 		return true;
@@ -192,21 +177,21 @@ public class LockCommand implements CommandExecutor {
 	//
 	///////////////////////////////////////////////////////////////
 	
-	private void lukitse(Player p, Block b, String kuutio, String kuution, String kuutioita, String tc2, String tc3) {
-		if (p.getLocation().distance(b.getLocation()) > 5) {
-			p.sendMessage(tc3 + "Olet liian kaukana voidaksesi lukita tämän " + kuution + "!");
-		}
-		else if (Protection.getLockManager().isLocked(b)) {
+	public void lukitse(Player p, Block b, String kuutio, String kuution, String kuutioita, String tc2, String tc3) {
+		if (Protection.getLockManager().isLocked(b)) {
 			p.sendMessage(tc3 + "Tämä " + kuutio + " on jo lukittu!");
-			p.playSound(p.getLocation(), Sound.BLOCK_CHEST_LOCKED, 1, 2);
+			p.sendTitle("§4§l✖", "", 5, 15, 5);
+			p.playSound(p.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1, 2);
 		}
 		else if (Protection.getAreaManager().getArea(b.getLocation()) != null && !Protection.getAreaManager().getArea(b.getLocation()).hasFlag(Flag.ALLOW_LOCKING) && !CoreUtils.hasRank(p, "ylläpitäjä")) {
 			p.sendMessage(tc3 + "Et voi lukita " + kuutioita + " tällä alueella!");
+			p.sendTitle("§4§l✖", "", 5, 15, 5);
 			p.playSound(p.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1, 2);
 		}
 		else {
 			Protection.getLockManager().lock(b, p);
-			p.sendMessage(tc2 + "Lukitsit " + kuution + ". Kukaan muu ei voi enää avata tai sulkea sitä.");
+			p.sendMessage(tc2 + "Lukitsit " + kuution + ".");
+			p.sendTitle("§2§l✓", "", 5, 15, 5);
 			p.playSound(p.getLocation(), Sound.BLOCK_CHEST_LOCKED, 1, 2);
 		}
 	}
@@ -217,22 +202,24 @@ public class LockCommand implements CommandExecutor {
 	//
 	///////////////////////////////////////////////////////////////
 	
-	private void avaa(Player p, Block b, String kuutio, String kuution, String kuutiosta, String kuutioista, String tc2, String tc3) {
-		if (p.getLocation().distance(b.getLocation()) > 5) {
-			p.sendMessage(tc3 + "Olet liian kaukana poistaaksesi tämän " + kuution + " lukituksen!");
-		}
-		else if (Protection.getLockManager().isLocked(b)) {
+	public void avaa(Player p, Block b, String kuutio, String kuution, String tc2, String tc3) {
+		if (Protection.getLockManager().isLocked(b)) {
 			if (Protection.getLockManager().isOwner(b, p)) {
 				Protection.getLockManager().unLock(b);
-				p.sendMessage(tc2 + "Poistettiin lukitus " + kuutiosta + ". Kaikki voivat taas käyttää sitä.");
+				p.sendMessage(tc2 + "Poistettiin " + kuution + " lukitus.");
+				p.sendTitle("§2§l✓", "", 5, 15, 5);
 				p.playSound(p.getLocation(), Sound.BLOCK_CHEST_LOCKED, 1, 2);
 			}
 			else {
-				p.sendMessage(tc3 + "Et voi poistaa lukitusta muiden " + kuutioista + "!");
+				p.sendMessage(tc3 + "Et voi poistaa toisen pelaajan " + kuution + " lukitusta!");
+				p.sendTitle("§4§l✖", "", 5, 15, 5);
+				p.playSound(p.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1, 2);
 			}
 		}
 		else {
 			p.sendMessage(tc3 + "Tämä " + kuutio + " ei ole lukossa!");
+			p.sendTitle("§4§l✖", "", 5, 15, 5);
+			p.playSound(p.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1, 2);
 		}
 	}
 	
@@ -242,11 +229,8 @@ public class LockCommand implements CommandExecutor {
 	//
 	///////////////////////////////////////////////////////////////
 	
-	private void oikeudet(Player p, Block b, String[] args, String kuutio, String kuutiota, String kuution, String kuutioihin, String tc1, String tc2, String tc3) {
-		if (p.getLocation().distance(b.getLocation()) > 5) {
-			p.sendMessage(tc3 + "Olet liian kaukana muokataksesi tämän " + kuution + " oikeuksia!");
-		}
-		else if (Protection.getLockManager().isLocked(b)) {
+	public void oikeudet(Player p, Block b, String[] args, String kuutio, String kuutiota, String kuution, String kuutioihin, String tc1, String tc2, String tc3) {
+		if (Protection.getLockManager().isLocked(b)) {
 			if (Protection.getLockManager().isOwner(b, p)) {
 				ArrayList<String> permissions = Protection.getLockManager().getPermissions(b);
 				if (args[0].equalsIgnoreCase("*kaikki*")) {
@@ -254,15 +238,19 @@ public class LockCommand implements CommandExecutor {
 						Protection.getLockManager().setPermissions(b, "^");
 						p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
 						p.sendMessage(tc2 + "Poistettiin " + tc1 + "kaikilta" + tc2 + " oikeudet käyttää tätä " + kuutiota + "!");
+						p.sendTitle("§2§l✓", "", 5, 15, 5);
 					}
 					else {
 						Protection.getLockManager().setPermissions(b, "*");
 						p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
 						p.sendMessage(tc2 + "Lisättiin " + tc1 + "kaikille" + tc2 + " oikeudet käyttää tätä " + kuutiota + "!");
+						p.sendTitle("§2§l✓", "", 5, 15, 5);
 					}
 				}
 				else if (args[0].equals(p.getName())) {
 					p.sendMessage(tc3 + "Et voi poistaa oikeuksia itseltäsi!");
+					p.sendTitle("§4§l✖", "", 5, 15, 5);
+					p.playSound(p.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1, 2);
 				}
 				else {
 					if (args[0].equalsIgnoreCase("*punakivi*")) {
@@ -271,16 +259,20 @@ public class LockCommand implements CommandExecutor {
 							Protection.getLockManager().setPermissions(b, permissions);
 							p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
 							p.sendMessage(tc2 + "Poistettiin " + tc1 + "punakiveltä" + tc2 + " oikeudet käyttää tätä " + kuutiota + "!");
+							p.sendTitle("§2§l✓", "", 5, 15, 5);
 						}
 						else {
 							if (permissions.contains("*")) {
 								p.sendMessage(tc3 + "Kaikilla pelaajilla, suppiloilla ja punakivellä on jo oikeudet käyttää tätä " + kuutiota + "!");
+								p.sendTitle("§4§l✖", "", 5, 15, 5);
+								p.playSound(p.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1, 2);
 								return;
 							}
 							permissions.add("+");
 							Protection.getLockManager().setPermissions(b, permissions);
 							p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
 							p.sendMessage(tc2 + "Lisättiin " + tc1 + "punakivelle" + tc2 + " oikeudet käyttää tätä " + kuutiota + "!");
+							p.sendTitle("§2§l✓", "", 5, 15, 5);
 						}
 					}
 					else if (args[0].equalsIgnoreCase("*suppilot*")) {
@@ -289,16 +281,20 @@ public class LockCommand implements CommandExecutor {
 							Protection.getLockManager().setPermissions(b, permissions);
 							p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
 							p.sendMessage(tc2 + "Poistettiin " + tc1 + "suppiloilta" + tc2 + " oikeudet käyttää tätä " + kuutiota + "!");
+							p.sendTitle("§2§l✓", "", 5, 15, 5);
 						}
 						else {
 							if (permissions.contains("*")) {
 								p.sendMessage(tc3 + "Kaikilla pelaajilla, suppiloilla ja punakivellä on jo oikeudet käyttää tätä " + kuutiota + "!");
+								p.sendTitle("§4§l✖", "", 5, 15, 5);
+								p.playSound(p.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1, 2);
 								return;
 							}
 							permissions.add("_");
 							Protection.getLockManager().setPermissions(b, permissions);
 							p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
 							p.sendMessage(tc2 + "Lisättiin " + tc1 + "suppiloille" + tc2 + " oikeudet käyttää tätä " + kuutiota + "!");
+							p.sendTitle("§2§l✓", "", 5, 15, 5);
 						}
 					}
 					else {
@@ -313,20 +309,26 @@ public class LockCommand implements CommandExecutor {
 										Protection.getLockManager().setPermissions(b, permissions);
 										p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
 										p.sendMessage(tc2 + "Poistettiin oikeudet käyttää tätä " + kuutiota + " pelaajalta " + tc1 + name + tc2 + "!");
+										p.sendTitle("§2§l✓", "", 5, 15, 5);
 									}
 									else {
 										if (permissions.contains("*")) {
 											p.sendMessage(tc3 + "Kaikilla pelaajilla on jo oikeudet käyttää tätä " + kuutiota + "!");
+											p.sendTitle("§4§l✖", "", 5, 15, 5);
+											p.playSound(p.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1, 2);
 											return;
 										}
 										permissions.add(uuid);
 										Protection.getLockManager().setPermissions(b, permissions);
 										p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
 										p.sendMessage(tc2 + "Lisättiin oikeudet käyttää tätä " + kuutiota + " pelaajalle " + tc1 + name + tc2 + "!");
+										p.sendTitle("§2§l✓", "", 5, 15, 5);
 									}
 								}
 								else {
 									p.sendMessage(tc3 + "Ei löydetty pelaajaa antamallasi nimellä!");
+									p.sendTitle("§4§l✖", "", 5, 15, 5);
+									p.playSound(p.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1, 2);
 								}
 							}
 						}.runTaskAsynchronously(Protection.getPlugin());
@@ -335,10 +337,14 @@ public class LockCommand implements CommandExecutor {
 			}
 			else {
 				p.sendMessage(tc3 + "Et voi lisätä oikeuksia muiden " + kuutioihin + "!");
+				p.sendTitle("§4§l✖", "", 5, 15, 5);
+				p.playSound(p.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1, 2);
 			}
 		}
 		else {
 			p.sendMessage(tc3 + "Tämä " + kuutio + " ei ole lukossa!");
+			p.sendTitle("§4§l✖", "", 5, 15, 5);
+			p.playSound(p.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1, 2);
 		}
 	}
 }
