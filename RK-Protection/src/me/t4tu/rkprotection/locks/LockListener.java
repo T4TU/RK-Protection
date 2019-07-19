@@ -1,6 +1,8 @@
 package me.t4tu.rkprotection.locks;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -9,7 +11,9 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Bisected.Half;
 import org.bukkit.block.data.type.Door;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -18,23 +22,24 @@ import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import me.t4tu.rkcore.utils.CoreUtils;
 import me.t4tu.rkcore.utils.MySQLResult;
 import me.t4tu.rkcore.utils.MySQLUtils;
-import me.t4tu.rkcore.utils.ReflectionUtils;
 import me.t4tu.rkcore.utils.SettingsUtils;
 import me.t4tu.rkprotection.Protection;
 import me.t4tu.rkprotection.areas.Area;
 import me.t4tu.rkprotection.areas.Flag;
-import net.md_5.bungee.api.ChatMessageType;
 
 public class LockListener implements Listener {
 	
@@ -465,72 +470,107 @@ public class LockListener implements Listener {
 		
 		if (Protection.getLockManager().isLocked(b)) {
 			String type = "palikka";
+			String type2 = "palikan";
 			if (b.getType().toString().contains("_DOOR") && !b.getType().toString().contains("IRON_DOOR")) {
 				type = "ovi";
+				type2 = "oven";
 			}
 			else if (b.getType().toString().contains("_FENCE_GATE")) {
 				type = "portti";
+				type2 = "portin";
 			}
 			else if (b.getType().toString().contains("_TRAPDOOR")) {
 				type = "ansaluukku";
+				type2 = "ansaluukun";
 			}
 			else if (b.getType().toString().contains("SHULKER_BOX")) {
 				type = "shulker-laatikko";
+				type2 = "shulker-laatikon";
 			}
 			else if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST) {
 				type = "arkku";
+				type2 = "arkun";
 			}
 			else if (b.getType() == Material.FURNACE) {
 				type = "uuni";
+				type2 = "uunin";
 			}
 			else if (b.getType() == Material.DISPENSER) {
 				type = "jakelulaite";
+				type2 = "jakelulaitteen";
 			}
 			else if (b.getType() == Material.DROPPER) {
 				type = "pudottaja";
+				type2 = "pudottajan";
 			}
 			else if (b.getType() == Material.HOPPER) {
 				type = "suppilo";
+				type2 = "suppilon";
 			}
 			else if (b.getType() == Material.ANVIL || b.getType() == Material.CHIPPED_ANVIL || b.getType() == Material.DAMAGED_ANVIL) {
 				type = "alasin";
+				type2 = "alasimen";
 			}
 			else if (b.getType() == Material.BREWING_STAND) {
 				type = "hautumateline";
+				type2 = "hautumatelineen";
 			}
 			else if (b.getType() == Material.JUKEBOX) {
 				type = "levysoitin";
+				type2 = "levysoittimen";
 			}
 			else if (b.getType() == Material.SMOKER) {
 				type = "savustin";
+				type2 = "savustimen";
 			}
 			else if (b.getType() == Material.BLAST_FURNACE) {
 				type = "masuuni";
+				type2 = "masuunin";
 			}
 			else if (b.getType() == Material.BARREL) {
 				type = "tynnyri";
+				type2 = "tynnyrin";
 			}
-			e.setCancelled(true);
-			Area area = Protection.getAreaManager().getArea(b.getLocation());
-			if (area == null || !area.hasFlag(Flag.HIDE_LOCK_MESSAGES)) {
+			if (Protection.getLockManager().isOwner(b, e.getPlayer())) {
+				Protection.getLockManager().unLock(b);
+				e.getPlayer().sendMessage(CoreUtils.getBaseColor() + "Poistettiin " + type2 + " lukitus.");
 				e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.BLOCK_CHEST_LOCKED, 1, 2);
-				e.getPlayer().sendTitle("§4§l✖", "§cTämä " + type + " on lukittu...", 10, 15, 5);
-				if (Protection.getLockManager().isOwner(b, e.getPlayer())) {
-					ReflectionUtils.sendChatPacket(e.getPlayer(), "{\"text\":\"§cTämä §4" + type + "§c on lukittu, joten sitä ei voi hajottaa! Poista lukitus ensin komennolla §4/avaa§c!\"}", ChatMessageType.ACTION_BAR);
+			}
+			else {
+				e.setCancelled(true);
+				Area area = Protection.getAreaManager().getArea(b.getLocation());
+				if (area == null || !area.hasFlag(Flag.HIDE_LOCK_MESSAGES)) {
+					e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.BLOCK_CHEST_LOCKED, 1, 2);
+					e.getPlayer().sendTitle("§4§l✖", "§cTämä " + type + " on lukittu...", 10, 15, 5);
 				}
 			}
 		}
 		else {
 			Block above = b.getRelative(BlockFace.UP);
-			if (above != null && above.getType().toString().contains("_DOOR") && !above.getType().toString().contains("IRON_DOOR")) {
+			if (above != null && ((above.getType().toString().contains("_DOOR") && !above.getType().toString().contains("IRON_DOOR")) || above.getType().toString().contains("ANVIL"))) {
+				boolean anvil = above.getType().toString().contains("ANVIL");
 				if (Protection.getLockManager().isLocked(above)) {
-					e.setCancelled(true);
-					Area area = Protection.getAreaManager().getArea(above.getLocation());
-					if (area == null || !area.hasFlag(Flag.HIDE_LOCK_MESSAGES)) {
+					if (Protection.getLockManager().isOwner(above, e.getPlayer())) {
+						Protection.getLockManager().unLock(above);
+						if (anvil) {
+							e.getPlayer().sendMessage(CoreUtils.getBaseColor() + "Poistettiin alasimen lukitus.");
+						}
+						else {
+							e.getPlayer().sendMessage(CoreUtils.getBaseColor() + "Poistettiin oven lukitus.");
+						}
 						e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.BLOCK_CHEST_LOCKED, 1, 2);
-						e.getPlayer().sendTitle("§4§l✖", "§cTämä ovi on lukittu...", 10, 15, 5);
-						if (Protection.getLockManager().isOwner(b, e.getPlayer())) {
-							ReflectionUtils.sendChatPacket(e.getPlayer(), "{\"text\":\"§cTämä §4ovi§c on lukittu, joten sitä ei voi hajottaa! Poista lukitus ensin komennolla §4/avaa§c!\"}", ChatMessageType.ACTION_BAR);
+					}
+					else {
+						e.setCancelled(true);
+						Area area = Protection.getAreaManager().getArea(above.getLocation());
+						if (area == null || !area.hasFlag(Flag.HIDE_LOCK_MESSAGES)) {
+							e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.BLOCK_CHEST_LOCKED, 1, 2);
+							if (anvil) {
+								e.getPlayer().sendTitle("§4§l✖", "§cTämä alasin on lukittu...", 10, 15, 5);
+							}
+							else {
+								e.getPlayer().sendTitle("§4§l✖", "§cTämä ovi on lukittu...", 10, 15, 5);
+							}
 						}
 					}
 				}
@@ -582,6 +622,45 @@ public class LockListener implements Listener {
 	
 	///////////////////////////////////////////////////////////////
 	//
+	//          onInventoryClick
+	//
+	///////////////////////////////////////////////////////////////
+	
+	@EventHandler
+	public void onInventoryClick(InventoryClickEvent e) {
+		if (e.getClickedInventory() instanceof AnvilInventory && e.getSlotType() == SlotType.RESULT) {
+			List<Block> anvils = new ArrayList<Block>();
+			for (int x = -5; x < 6; x++) {
+				for (int y = -5; y < 6; y++) {
+					for (int z = -5; z < 6; z++) {
+						Location location = e.getWhoClicked().getEyeLocation().add(x, y, z);
+						if (location.getBlock().getType() == Material.DAMAGED_ANVIL) {
+							anvils.add(location.getBlock());
+						}
+					}
+				}
+			}
+			new BukkitRunnable() {
+				public void run() {
+					for (Block block : anvils) {
+						if (block.getType() != Material.DAMAGED_ANVIL) {
+							if (Protection.getLockManager().isLocked(block)) {
+								Protection.getLockManager().unLock(block);
+								if (e.getWhoClicked() instanceof Player) {
+									Player player = (Player) e.getWhoClicked();
+									player.sendMessage(CoreUtils.getBaseColor() + "Poistettiin alasimen lukitus.");
+									player.playSound(player.getLocation(), Sound.BLOCK_CHEST_LOCKED, 1, 2);
+								}
+							}
+						}
+					}
+				}
+			}.runTask(Protection.getPlugin());
+		}
+	}
+	
+	///////////////////////////////////////////////////////////////
+	//
 	//          onBlockPistonExtend
 	//
 	///////////////////////////////////////////////////////////////
@@ -595,7 +674,7 @@ public class LockListener implements Listener {
 			}
 			else {
 				Block above = b.getRelative(BlockFace.UP);
-				if (above != null && above.getType().toString().contains("_DOOR") && !above.getType().toString().contains("IRON_DOOR")) {
+				if (above != null && ((above.getType().toString().contains("_DOOR") && !above.getType().toString().contains("IRON_DOOR")) || above.getType().toString().contains("ANVIL"))) {
 					if (Protection.getLockManager().isLocked(above)) {
 						e.setCancelled(true);
 						return;
@@ -620,7 +699,7 @@ public class LockListener implements Listener {
 			}
 			else {
 				Block above = b.getRelative(BlockFace.UP);
-				if (above != null && above.getType().toString().contains("_DOOR") && !above.getType().toString().contains("IRON_DOOR")) {
+				if (above != null && ((above.getType().toString().contains("_DOOR") && !above.getType().toString().contains("IRON_DOOR")) || above.getType().toString().contains("ANVIL"))) {
 					if (Protection.getLockManager().isLocked(above)) {
 						e.setCancelled(true);
 						return;
@@ -636,7 +715,7 @@ public class LockListener implements Listener {
 	//
 	///////////////////////////////////////////////////////////////
 	
-	@EventHandler
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void onEntityExplode(EntityExplodeEvent e) {
 		Iterator<Block> iterator = e.blockList().iterator();
 		while (iterator.hasNext()) {
@@ -646,7 +725,7 @@ public class LockListener implements Listener {
 			}
 			else {
 				Block above = b.getRelative(BlockFace.UP);
-				if (above != null && above.getType().toString().contains("_DOOR") && !above.getType().toString().contains("IRON_DOOR")) {
+				if (above != null && ((above.getType().toString().contains("_DOOR") && !above.getType().toString().contains("IRON_DOOR")) || above.getType().toString().contains("ANVIL"))) {
 					if (Protection.getLockManager().isLocked(above)) {
 						iterator.remove();
 					}
@@ -661,7 +740,7 @@ public class LockListener implements Listener {
 	//
 	///////////////////////////////////////////////////////////////
 	
-	@EventHandler
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void onBlockExplode(BlockExplodeEvent e) {
 		Iterator<Block> iterator = e.blockList().iterator();
 		while (iterator.hasNext()) {
@@ -671,7 +750,7 @@ public class LockListener implements Listener {
 			}
 			else {
 				Block above = b.getRelative(BlockFace.UP);
-				if (above != null && above.getType().toString().contains("_DOOR") && !above.getType().toString().contains("IRON_DOOR")) {
+				if (above != null && ((above.getType().toString().contains("_DOOR") && !above.getType().toString().contains("IRON_DOOR")) || above.getType().toString().contains("ANVIL"))) {
 					if (Protection.getLockManager().isLocked(above)) {
 						iterator.remove();
 					}
