@@ -104,6 +104,7 @@ public class AreaManager {
 						flags.add(Flag.valueOf(flag));
 					}
 					Area area = new Area(name, id, subAreas, flags);
+					area.setRespawnLocation(CoreUtils.loadLocation(Protection.getPlugin(), "areas." + s + ".respawn-location"));
 					areas.add(area);
 				}
 				catch (Exception e) {

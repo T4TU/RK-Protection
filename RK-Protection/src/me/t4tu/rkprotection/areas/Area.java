@@ -13,6 +13,7 @@ public class Area {
 	private int id;
 	private List<SubArea> subAreas;
 	private List<Flag> flags;
+	private Location respawnLocation;
 	
 	public Area(String name, int id, List<SubArea> subAreas, List<Flag> flags) {
 		this.name = name;
@@ -48,6 +49,14 @@ public class Area {
 	
 	public boolean hasFlag(Flag flag) {
 		return flags.contains(flag);
+	}
+	
+	public Location getRespawnLocation() {
+		return respawnLocation;
+	}
+	
+	public void setRespawnLocation(Location respawnLocation) {
+		this.respawnLocation = respawnLocation;
 	}
 	
 	public void addSubArea(SubArea subArea) {

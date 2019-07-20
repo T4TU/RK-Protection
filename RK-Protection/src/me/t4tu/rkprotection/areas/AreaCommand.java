@@ -234,17 +234,33 @@ public class AreaCommand implements CommandExecutor {
 							p.sendMessage(usage + "/area removeborder <ID> <nimi>");
 						}
 					}
+					else if (args[0].equalsIgnoreCase("setrespawn")) {
+						if (args.length >= 2) {
+							Area area = Protection.getAreaManager().getAreaById(args[1]);
+							if (area != null) {
+								CoreUtils.setLocation(Protection.getPlugin(), "areas." + area.getId() + ".respawn-location", p.getLocation());
+								area.setRespawnLocation(p.getLocation());
+								p.sendMessage(tc2 + "Asetettiin alueen " + tc1 + area.getName() + tc2 + " respawn-sijainniksi nykyinen sijaintisi!");
+							}
+							else {
+								p.sendMessage(tc3 + "Ei löydetty aluetta antamallasi ID:llä!");
+							}
+						}
+						else {
+							p.sendMessage(usage + "/area setrespawn <ID>");
+						}
+					}
 					else if (args[0].equalsIgnoreCase("reload")) {
 						Protection.getPlugin().reloadConfig();
 						Protection.getAreaManager().loadAreasFromConfig();
 						p.sendMessage(tc2 + "Ladattiin alueet uudestaan!");
 					}
 					else {
-						p.sendMessage(usage + "/area list/add/remove/flags/flag/listborder/addborder/removeborder/reload");
+						p.sendMessage(usage + "/area list/add/remove/flags/flag/listborder/addborder/removeborder/setrespawn/reload");
 					}
 				}
 				else {
-					p.sendMessage(usage + "/area list/add/remove/flags/flag/listborder/addborder/removeborder/reload");
+					p.sendMessage(usage + "/area list/add/remove/flags/flag/listborder/addborder/removeborder/setrespawn/reload");
 				}
 			}
 			else {

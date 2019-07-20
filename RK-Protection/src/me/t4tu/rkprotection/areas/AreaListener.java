@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World.Environment;
@@ -41,6 +42,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -153,10 +155,21 @@ public class AreaListener implements Listener {
 		}
 	}
 	
+	@EventHandler(priority = EventPriority.HIGH)
+	public void onPlayerRespawn(PlayerRespawnEvent e) {
+		Area area = Protection.getAreaManager().getArea(e.getPlayer().getLocation());
+		if (area != null && area.hasFlag(Flag.CUSTOM_RESPAWN_LOCATION)) {
+			Location location = area.getRespawnLocation();
+			if (location != null) {
+				e.setRespawnLocation(location);
+			}
+		}
+	}
+	
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent e) {
 		Area area = Protection.getAreaManager().getArea(e.getEntity().getLocation());
-		if (area != null && area.hasFlag(Flag.PVP)) {
+		if (area != null && area.hasFlag(Flag.KEEP_INVENTORY)) {
 			e.setKeepInventory(true);
 			e.setKeepLevel(true);
 			e.setDroppedExp(0);
