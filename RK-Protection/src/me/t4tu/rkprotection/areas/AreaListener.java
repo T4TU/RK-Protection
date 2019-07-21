@@ -330,6 +330,9 @@ public class AreaListener implements Listener {
 			else if (animals.contains(t) && area.hasFlag(Flag.NO_ANIMALS) && REASONS.contains(e.getSpawnReason())) {
 				e.setCancelled(true);
 			}
+			else if (area.hasFlag(Flag.STARTING_AREA) && e.getSpawnReason() == SpawnReason.NETHER_PORTAL) {
+				e.setCancelled(true);
+			}
 		}
 		if (e.getEntity().getType() == EntityType.WITHER && e.getSpawnReason() == SpawnReason.BUILD_WITHER && e.getLocation().getWorld().getEnvironment() != Environment.NETHER) {
 			e.setCancelled(true);
