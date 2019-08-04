@@ -49,6 +49,10 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import org.bukkit.util.Vector;
 
+import me.t4tu.rkcore.statistics.PlayerStatisticsEntry;
+import me.t4tu.rkcore.statistics.Statistic;
+import me.t4tu.rkcore.statistics.StatisticsManager;
+import me.t4tu.rkcore.statistics.StatisticsViewer;
 import me.t4tu.rkcore.utils.CoreUtils;
 import me.t4tu.rkprotection.Protection;
 
@@ -72,24 +76,32 @@ public class AreaListener implements Listener {
 			if (to != from) {
 				if (to != null) {
 					if (!to.hasFlag(Flag.HIDE_MESSAGES)) {
-						e.getPlayer().sendMessage("§2Saavut alueelle: §a" + to.getName().replace("_", " "));
-						if (to.hasFlag(Flag.PVP) && to.hasFlag(Flag.SHOW_PVP_MESSAGE)) {
-							e.getPlayer().sendMessage("");
-							e.getPlayer().sendMessage("§4§l Varoitus!");
-							e.getPlayer().sendMessage("");
-							e.getPlayer().sendMessage("§c Saavut PvP-alueelle! Tällä alueella muut voivat tappaa sinut ja sinä voit tappaa muita. Et menetä tavaroita kuollessasi.");
-							e.getPlayer().sendMessage("");
+						if (to.hasFlag(Flag.SHOW_PVP_MESSAGE)) {
+							e.getPlayer().sendMessage("§cSaavut PvP-alueelle!");
+						}
+						else {
+							e.getPlayer().sendMessage("§2Saavut alueelle: §a" + to.getName().replace("_", " "));
 						}
 					}
 					else {
 						if (from != null && !from.hasFlag(Flag.HIDE_MESSAGES)) {
-							e.getPlayer().sendMessage("§2Poistut alueelta: §a" + from.getName().replace("_", " "));
+							if (from.hasFlag(Flag.SHOW_PVP_MESSAGE)) {
+								e.getPlayer().sendMessage("§cPoistut PvP-alueelta!");
+							}
+							else {
+								e.getPlayer().sendMessage("§2Poistut alueelta: §a" + from.getName().replace("_", " "));
+							}
 						}
 					}
 				}
 				else {
 					if (!from.hasFlag(Flag.HIDE_MESSAGES)) {
-						e.getPlayer().sendMessage("§2Poistut alueelta: §a" + from.getName().replace("_", " "));
+						if (from.hasFlag(Flag.SHOW_PVP_MESSAGE)) {
+							e.getPlayer().sendMessage("§cPoistut PvP-alueelta!");
+						}
+						else {
+							e.getPlayer().sendMessage("§2Poistut alueelta: §a" + from.getName().replace("_", " "));
+						}
 					}
 				}
 			}
@@ -173,6 +185,18 @@ public class AreaListener implements Listener {
 			e.setKeepInventory(true);
 			e.setKeepLevel(true);
 			e.setDroppedExp(0);
+		}
+		if (area != null && area.hasFlag(Flag.PVP)) {
+			StatisticsManager.incrementStatistics(new PlayerStatisticsEntry(Statistic.PVP_DEATHS, 1, e.getEntity().getUniqueId().toString()));
+			Player killer = e.getEntity().getKiller();
+			if (killer != null) {
+				Area killerArea = Protection.getAreaManager().getArea(killer.getLocation());
+				if (killerArea != null && killerArea.hasFlag(Flag.PVP)) {
+					StatisticsManager.incrementStatistics(new PlayerStatisticsEntry(Statistic.PVP_KILLS, 1, killer.getUniqueId().toString()));
+					StatisticsViewer.incrementKillsInPvpTopCache(e.getEntity());
+					StatisticsViewer.updatePvpTopScoreboard(e.getEntity().getWorld());
+				}
+			}
 		}
 	}
 	
