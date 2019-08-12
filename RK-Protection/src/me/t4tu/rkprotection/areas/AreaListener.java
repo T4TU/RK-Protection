@@ -193,7 +193,7 @@ public class AreaListener implements Listener {
 				Area killerArea = Protection.getAreaManager().getArea(killer.getLocation());
 				if (killerArea != null && killerArea.hasFlag(Flag.PVP)) {
 					StatisticsManager.incrementStatistics(new PlayerStatisticsEntry(Statistic.PVP_KILLS, 1, killer.getUniqueId().toString()));
-					StatisticsViewer.incrementKillsInPvpTopCache(e.getEntity());
+					StatisticsViewer.incrementKillsInPvpTopCache(killer);
 					StatisticsViewer.updatePvpTopScoreboard(e.getEntity().getWorld());
 				}
 			}
