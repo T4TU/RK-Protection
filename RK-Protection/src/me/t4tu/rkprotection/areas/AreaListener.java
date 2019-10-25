@@ -1,13 +1,17 @@
 package me.t4tu.rkprotection.areas;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World.Environment;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Levelled;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -21,6 +25,10 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockBurnEvent;
+import org.bukkit.event.block.BlockFadeEvent;
+import org.bukkit.event.block.BlockIgniteEvent;
+import org.bukkit.event.block.BlockIgniteEvent.IgniteCause;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.AreaEffectCloudApplyEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
@@ -44,9 +52,14 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import me.t4tu.rkcore.statistics.PlayerStatisticsEntry;
@@ -55,6 +68,7 @@ import me.t4tu.rkcore.statistics.StatisticsManager;
 import me.t4tu.rkcore.statistics.StatisticsViewer;
 import me.t4tu.rkcore.utils.CoreUtils;
 import me.t4tu.rkprotection.Protection;
+import net.md_5.bungee.api.ChatColor;
 
 public class AreaListener implements Listener {
 	
@@ -66,6 +80,17 @@ public class AreaListener implements Listener {
 			Material.CARTOGRAPHY_TABLE, Material.COMPOSTER, Material.GRINDSTONE, Material.LECTERN, Material.LOOM, Material.SMOKER, Material.STONECUTTER, Material.FLETCHING_TABLE, 
 			Material.SMITHING_TABLE);
 	
+	private List<Location> fireSpreadCooldown = new ArrayList<Location>();
+	private List<String> denyMessageCooldown = new ArrayList<String>();
+	
+	public List<Location> getFireSpreadCooldown() {
+		return fireSpreadCooldown;
+	}
+	
+	public List<String> getDenyMessageCooldown() {
+		return denyMessageCooldown;
+	}
+	
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent e) {
 		if (e.getTo().getBlock().getLocation().distance(e.getFrom().getBlock().getLocation()) > 0) {
@@ -75,12 +100,25 @@ public class AreaListener implements Listener {
 			
 			if (to != from) {
 				if (to != null) {
+					if (to.hasFlag(Flag.DENY_ENTRY)) {
+						e.setCancelled(true);
+						if (!denyMessageCooldown.contains(e.getPlayer().getName())) {
+							e.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', to.getDenyMessage()));
+							denyMessageCooldown.add(e.getPlayer().getName());
+							new BukkitRunnable() {
+								public void run() {
+									denyMessageCooldown.remove(e.getPlayer().getName());
+								}
+							}.runTaskLater(Protection.getPlugin(), 20);
+						}
+						return;
+					}
 					if (!to.hasFlag(Flag.HIDE_MESSAGES)) {
 						if (to.hasFlag(Flag.SHOW_PVP_MESSAGE)) {
 							e.getPlayer().sendMessage("§cSaavut PvP-alueelle!");
 						}
 						else {
-							e.getPlayer().sendMessage("§2Saavut alueelle: §a" + to.getName().replace("_", " "));
+							e.getPlayer().sendMessage("§3Saavut alueelle: §b" + to.getName().replace("_", " "));
 						}
 					}
 					else {
@@ -89,7 +127,7 @@ public class AreaListener implements Listener {
 								e.getPlayer().sendMessage("§cPoistut PvP-alueelta!");
 							}
 							else {
-								e.getPlayer().sendMessage("§2Poistut alueelta: §a" + from.getName().replace("_", " "));
+								e.getPlayer().sendMessage("§3Poistut alueelta: §b" + from.getName().replace("_", " "));
 							}
 						}
 					}
@@ -100,17 +138,17 @@ public class AreaListener implements Listener {
 							e.getPlayer().sendMessage("§cPoistut PvP-alueelta!");
 						}
 						else {
-							e.getPlayer().sendMessage("§2Poistut alueelta: §a" + from.getName().replace("_", " "));
+							e.getPlayer().sendMessage("§3Poistut alueelta: §b" + from.getName().replace("_", " "));
 						}
 					}
 				}
 			}
 			
 			if (to == null && from != null && from.hasFlag(Flag.SHOW_PROTECTED_MESSAGE)) {
-				e.getPlayer().sendMessage("§2Poistut suojatulta alueelta. Voit nyt rakentaa sääntöjen rajoissa.");
+				e.getPlayer().sendMessage("§3Poistut suojatulta alueelta. Voit nyt rakentaa sääntöjen rajoissa.");
 			}
 			else if (to != null && from == null && to.hasFlag(Flag.SHOW_PROTECTED_MESSAGE)) {
-				e.getPlayer().sendMessage("§2Saavut suojatulle alueelle. Et voi rakentaa täällä.");
+				e.getPlayer().sendMessage("§3Saavut suojatulle alueelle. Et voi rakentaa täällä.");
 			}
 			
 			if (to != null && to.hasFlag(Flag.THRONE)) {
@@ -165,6 +203,9 @@ public class AreaListener implements Listener {
 				}
 			}
 		}
+		if (victimArea != null && victimArea.hasFlag(Flag.DENY_ATTACKING_ENTITIES)) {
+			e.setCancelled(true);
+		}
 	}
 	
 	@EventHandler(priority = EventPriority.HIGH)
@@ -189,7 +230,7 @@ public class AreaListener implements Listener {
 		if (area != null && area.hasFlag(Flag.PVP)) {
 			StatisticsManager.incrementStatistics(new PlayerStatisticsEntry(Statistic.PVP_DEATHS, 1, e.getEntity().getUniqueId().toString()));
 			Player killer = e.getEntity().getKiller();
-			if (killer != null) {
+			if (killer != null && !killer.equals(e.getEntity())) {
 				Area killerArea = Protection.getAreaManager().getArea(killer.getLocation());
 				if (killerArea != null && killerArea.hasFlag(Flag.PVP)) {
 					StatisticsManager.incrementStatistics(new PlayerStatisticsEntry(Statistic.PVP_KILLS, 1, killer.getUniqueId().toString()));
@@ -256,11 +297,41 @@ public class AreaListener implements Listener {
 	
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent e) {
-		if (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.PHYSICAL) {
+		
+		if (e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getPlayer().getGameMode() != GameMode.CREATIVE) {
+			if (e.getClickedBlock().getType() == Material.CAULDRON) {
+				Levelled levelled = (Levelled) e.getClickedBlock().getBlockData();
+				if (levelled.getLevel() != 0) {
+					Area area = Protection.getAreaManager().getArea(e.getClickedBlock().getLocation());
+					if (area != null && area.hasFlag(Flag.INFINITE_WATER_WELLS)) {
+						e.setCancelled(true);
+						ItemStack item = e.getPlayer().getInventory().getItemInMainHand();
+						if (e.getHand() == EquipmentSlot.OFF_HAND) {
+							item = e.getPlayer().getInventory().getItemInOffHand();
+						}
+						if (CoreUtils.isNotAir(item)) {
+							if (item.getType() == Material.BUCKET) {
+								item.setType(Material.WATER_BUCKET);
+								e.getPlayer().updateInventory();
+							}
+							else if (item.getType() == Material.GLASS_BOTTLE) {
+								item.setType(Material.POTION);
+								PotionMeta meta = (PotionMeta) item.getItemMeta();
+								meta.setBasePotionData(new PotionData(PotionType.WATER));
+								item.setItemMeta(meta);
+								e.getPlayer().updateInventory();
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.PHYSICAL) {
 			if (!CoreUtils.getAdminPowers().contains(e.getPlayer().getName()) && !CoreUtils.getBuilderPowers().contains(e.getPlayer().getName()) && !e.getPlayer().isOp()) {
-				Area area = Protection.getAreaManager().getArea(e.getClickedBlock().getLocation());
+				Area area = e.getAction() != Action.RIGHT_CLICK_AIR ? Protection.getAreaManager().getArea(e.getClickedBlock().getLocation()) : Protection.getAreaManager().getArea(e.getPlayer().getLocation());
 				if (area != null) {
-					if (!area.hasFlag(Flag.ALLOW_BUILDING)) {
+					if (!area.hasFlag(Flag.ALLOW_BUILDING) && e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 						if (e.getHand() == EquipmentSlot.HAND && CoreUtils.isNotAir(e.getPlayer().getInventory().getItemInMainHand())) {
 							Material material = e.getPlayer().getInventory().getItemInMainHand().getType();
 							if (material == Material.WATER_BUCKET || material == Material.LAVA_BUCKET || material == Material.ARMOR_STAND 
@@ -270,7 +341,7 @@ public class AreaListener implements Listener {
 								return;
 							}
 						}
-						if (e.getHand() == EquipmentSlot.OFF_HAND && CoreUtils.isNotAir(e.getPlayer().getInventory().getItemInOffHand())) {
+						else if (e.getHand() == EquipmentSlot.OFF_HAND && CoreUtils.isNotAir(e.getPlayer().getInventory().getItemInOffHand())) {
 							Material material = e.getPlayer().getInventory().getItemInOffHand().getType();
 							if (material == Material.WATER_BUCKET || material == Material.LAVA_BUCKET || material == Material.ARMOR_STAND 
 									|| material == Material.ITEM_FRAME || material == Material.PAINTING) {
@@ -280,6 +351,35 @@ public class AreaListener implements Listener {
 							}
 						}
 						
+					}
+					if (!area.hasFlag(Flag.ALLOW_DESTROYING) && (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR)) {
+						if (e.getHand() == EquipmentSlot.HAND && CoreUtils.isNotAir(e.getPlayer().getInventory().getItemInMainHand())) {
+							Material material = e.getPlayer().getInventory().getItemInMainHand().getType();
+							ItemMeta meta = e.getPlayer().getInventory().getItemInMainHand().getItemMeta();
+							if ((material == Material.SPLASH_POTION || material == Material.LINGERING_POTION) && ((PotionMeta) meta).getBasePotionData().getType() == PotionType.WATER) {
+								e.setCancelled(true);
+								e.getPlayer().updateInventory();
+								return;
+							}
+						}
+						else if (e.getHand() == EquipmentSlot.OFF_HAND && CoreUtils.isNotAir(e.getPlayer().getInventory().getItemInOffHand())) {
+							Material material = e.getPlayer().getInventory().getItemInOffHand().getType();
+							ItemMeta meta = e.getPlayer().getInventory().getItemInOffHand().getItemMeta();
+							if ((material == Material.SPLASH_POTION || material == Material.LINGERING_POTION) && ((PotionMeta) meta).getBasePotionData().getType() == PotionType.WATER) {
+								e.setCancelled(true);
+								e.getPlayer().updateInventory();
+								return;
+							}
+						}
+					}
+					if (!area.hasFlag(Flag.ALLOW_DESTROYING) && e.getAction() == Action.PHYSICAL) {
+						if (e.getClickedBlock().getType() == Material.FARMLAND) {
+							e.setCancelled(true);
+							return;
+						}
+					}
+					if (e.getAction() == Action.RIGHT_CLICK_AIR) {
+						return;
 					}
 					if (area.hasFlag(Flag.ALLOW_BLOCK_INTERACTION)) {
 						return;
@@ -304,14 +404,13 @@ public class AreaListener implements Listener {
 					e.setCancelled(true);
 				}
 			}
-		}
-		if (e.getAction() == Action.PHYSICAL) {
-			Area area = Protection.getAreaManager().getArea(e.getClickedBlock().getLocation());
-			if (area != null) {
-				if (!area.hasFlag(Flag.ALLOW_DESTROYING)) {
-					if (e.getClickedBlock().getType() == Material.FARMLAND) {
+			else if (e.getAction() == Action.PHYSICAL) {
+				if (e.getClickedBlock().getType() == Material.FARMLAND) {
+					Area area = Protection.getAreaManager().getArea(e.getClickedBlock().getLocation());
+					if (area != null && !area.hasFlag(Flag.ALLOW_DESTROYING)) {
 						e.setCancelled(true);
 					}
+					return;
 				}
 			}
 		}
@@ -339,6 +438,53 @@ public class AreaListener implements Listener {
 					e.setCancelled(true);
 					e.getPlayer().updateInventory();
 				}
+			}
+		}
+	}
+	
+	@EventHandler(ignoreCancelled = true)
+	public void onBlockIgnite(BlockIgniteEvent e) {
+		Area area = Protection.getAreaManager().getArea(e.getBlock().getLocation());
+		if (e.getCause() == IgniteCause.LAVA || e.getCause() == IgniteCause.LIGHTNING) {
+			e.setCancelled(true);
+			return;
+		}
+		if (e.getCause() == IgniteCause.SPREAD && (area != null && area.hasFlag(Flag.NO_FIRE_SPREAD))) {
+			e.setCancelled(true);
+			return;
+		}
+		if (e.getCause() == IgniteCause.SPREAD && (fireSpreadCooldown.size() > 500 || fireSpreadCooldown.contains(e.getBlock().getLocation()))) {
+			e.setCancelled(true);
+			return;
+		}
+		new BukkitRunnable() {
+			public void run() {
+				if (e.getBlock().getType() == Material.FIRE && e.getBlock().getRelative(BlockFace.DOWN).getType() != Material.NETHERRACK && (area == null || !area.hasFlag(Flag.NO_FIRE_SPREAD))) {
+					e.getBlock().setType(Material.AIR);
+					if (!fireSpreadCooldown.contains(e.getBlock().getLocation())) {
+						fireSpreadCooldown.add(e.getBlock().getLocation());
+						new BukkitRunnable() {
+							public void run() {
+								fireSpreadCooldown.remove(e.getBlock().getLocation());
+							}
+						}.runTaskLater(Protection.getPlugin(), 2400);
+					}
+				}
+			}
+		}.runTaskLater(Protection.getPlugin(), 300);
+	}
+	
+	@EventHandler
+	public void onBlockBurn(BlockBurnEvent e) {
+		e.setCancelled(true);
+	}
+	
+	@EventHandler
+	public void onBlockFade(BlockFadeEvent e) {
+		if (e.getBlock().getType() == Material.FIRE) {
+			Area area = Protection.getAreaManager().getArea(e.getBlock().getLocation());
+			if (area != null && area.hasFlag(Flag.NO_FIRE_SPREAD)) {
+				e.setCancelled(true);
 			}
 		}
 	}

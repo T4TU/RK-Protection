@@ -105,6 +105,7 @@ public class AreaManager {
 					}
 					Area area = new Area(name, id, subAreas, flags);
 					area.setRespawnLocation(CoreUtils.loadLocation(Protection.getPlugin(), "areas." + s + ".respawn-location"));
+					area.setDenyMessage(Protection.getPlugin().getConfig().getString("areas." + s + ".deny-message"));
 					areas.add(area);
 				}
 				catch (Exception e) {

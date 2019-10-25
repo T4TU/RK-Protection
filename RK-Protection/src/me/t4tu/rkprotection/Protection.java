@@ -40,6 +40,7 @@ public class Protection extends JavaPlugin {
 		Bukkit.getPluginManager().registerEvents(lockListener, this);
 		registerCommand("pvpbypass", areaCommand, false);
 		registerCommand("area", areaCommand, false);
+		registerCommand("clearfire", areaCommand, false);
 		registerCommand("lukko", lockCommand, true);
 		registerCommand("lukitse", lockCommand, true);
 		registerCommand("avaa", lockCommand, true);

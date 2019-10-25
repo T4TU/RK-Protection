@@ -220,7 +220,7 @@ public class AreaCommand implements CommandExecutor {
 								SubArea subArea = area.getSubAreaByName(args[2]);
 								if (subArea != null) {
 									area.removeSubArea(subArea.getName());
-									p.sendMessage(tc2 + "Poistettiin raja " + tc1 + subArea.getName() + tc2 + " alueelle " + tc1 + area.getName() + tc2 + "!");
+									p.sendMessage(tc2 + "Poistettiin raja " + tc1 + subArea.getName() + tc2 + " alueelta " + tc1 + area.getName() + tc2 + "!");
 								}
 								else {
 									p.sendMessage(tc3 + "Ei löydetty rajaa antamallasi nimellä!");
@@ -250,17 +250,39 @@ public class AreaCommand implements CommandExecutor {
 							p.sendMessage(usage + "/area setrespawn <ID>");
 						}
 					}
+					else if (args[0].equalsIgnoreCase("setdenymessage")) {
+						if (args.length >= 3) {
+							Area area = Protection.getAreaManager().getAreaById(args[1]);
+							if (area != null) {
+								String message = "";
+								for (int i = 2; i < args.length; i++) {
+									message += " " + args[i];
+								}
+								message = message.trim();
+								Protection.getPlugin().getConfig().set("areas." + area.getId() + ".deny-message", message);
+								Protection.getPlugin().saveConfig();
+								area.setDenyMessage(message);
+								p.sendMessage(tc2 + "Asetettiin alueen " + tc1 + area.getName() + tc2 + " \"deny-message\"!");
+							}
+							else {
+								p.sendMessage(tc3 + "Ei löydetty aluetta antamallasi ID:llä!");
+							}
+						}
+						else {
+							p.sendMessage(usage + "/area setdenymessage <ID> <viesti>");
+						}
+					}
 					else if (args[0].equalsIgnoreCase("reload")) {
 						Protection.getPlugin().reloadConfig();
 						Protection.getAreaManager().loadAreasFromConfig();
 						p.sendMessage(tc2 + "Ladattiin alueet uudestaan!");
 					}
 					else {
-						p.sendMessage(usage + "/area list/add/remove/flags/flag/listborder/addborder/removeborder/setrespawn/reload");
+						p.sendMessage(usage + "/area list/add/remove/flags/flag/listborder/addborder/removeborder/setrespawn/setdenymessage/reload");
 					}
 				}
 				else {
-					p.sendMessage(usage + "/area list/add/remove/flags/flag/listborder/addborder/removeborder/setrespawn/reload");
+					p.sendMessage(usage + "/area list/add/remove/flags/flag/listborder/addborder/removeborder/setdenymessage/setrespawn/reload");
 				}
 			}
 			else {
@@ -280,6 +302,12 @@ public class AreaCommand implements CommandExecutor {
 			}
 			else {
 				p.sendMessage(noPermission);
+			}
+		}
+		else if (cmd.getName().equalsIgnoreCase("clearfire")) {
+			if (CoreUtils.hasRank(sender, "ylläpitäjä")) {
+				Protection.getAreaListener().getFireSpreadCooldown().clear();
+				sender.sendMessage(tc2 + "Komento suoritettiin onnistuneesti!");
 			}
 		}
 		return true;

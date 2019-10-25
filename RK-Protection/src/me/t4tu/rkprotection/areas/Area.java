@@ -14,6 +14,7 @@ public class Area {
 	private List<SubArea> subAreas;
 	private List<Flag> flags;
 	private Location respawnLocation;
+	private String denyMessage;
 	
 	public Area(String name, int id, List<SubArea> subAreas, List<Flag> flags) {
 		this.name = name;
@@ -57,6 +58,14 @@ public class Area {
 	
 	public void setRespawnLocation(Location respawnLocation) {
 		this.respawnLocation = respawnLocation;
+	}
+	
+	public String getDenyMessage() {
+		return denyMessage;
+	}
+	
+	public void setDenyMessage(String denyMessage) {
+		this.denyMessage = denyMessage;
 	}
 	
 	public void addSubArea(SubArea subArea) {
