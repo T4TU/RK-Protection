@@ -225,6 +225,7 @@ public class AreaListener implements Listener {
 		if (area != null && area.hasFlag(Flag.KEEP_INVENTORY)) {
 			e.setKeepInventory(true);
 			e.setKeepLevel(true);
+			e.getDrops().clear();
 			e.setDroppedExp(0);
 		}
 		if (area != null && area.hasFlag(Flag.PVP)) {
