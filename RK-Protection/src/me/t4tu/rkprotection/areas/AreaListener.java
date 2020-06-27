@@ -236,7 +236,11 @@ public class AreaListener implements Listener {
 				if (killerArea != null && killerArea.hasFlag(Flag.PVP)) {
 					StatisticsManager.incrementStatistics(new PlayerStatisticsEntry(Statistic.PVP_KILLS, 1, killer.getUniqueId().toString()));
 					StatisticsViewer.incrementKillsInPvpTopCache(killer);
-					StatisticsViewer.updatePvpTopScoreboard(e.getEntity().getWorld());
+					new BukkitRunnable() {
+						public void run() {
+							StatisticsViewer.updatePvpTopScoreboard(e.getEntity().getWorld());
+						}
+					}.runTaskAsynchronously(Protection.getPlugin());
 				}
 			}
 		}
